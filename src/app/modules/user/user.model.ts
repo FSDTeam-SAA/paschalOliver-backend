@@ -43,6 +43,18 @@ const userSchema = new Schema<IUser>(
     about: {
       type: String,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    otp: {
+      type: String,
+      select: 0,
+    },
+    otpExpires: {
+      type: Date,
+      select: 0,
+    },
   },
   {
     timestamps: true,

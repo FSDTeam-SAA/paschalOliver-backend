@@ -1,15 +1,36 @@
-// import z from 'zod';
+import { z } from 'zod';
 
-// const userSchema = z.object({
-//   name: z.string('Name is required').min(3),
-//   email: z.string('Email is required').email('Invalid email'),
-//   password: z.string('Password is required').min(6),
-//   role: z.enum(['admin', 'user']).default('user'),
-// });
+// For Creating User (Register)
+const createUserSchema = z.object({
+  body: z.object({
+    name: z
+      .string()
+      .min(1, 'Name is required')
+      .min(3, 'Name must be at least 3 characters'),
+    email: z
+      .string()
+      .min(1, 'Email is required')
+      .email('Invalid email address'),
+    password: z
+      .string()
+      .min(1, 'Password is required')
+      .min(6, 'Password must be at least 6 characters'),
+    role: z.enum(['admin', 'client', 'professional']),
+  }),
+});
 
-// const updateUserSchema = userSchema.partial();
+// For Updating User (Personal Details)
+const updateUserSchema = z.object({
+  body: z.object({
+    name: z.string().min(3).optional(),
+    phone: z.string().optional(),
+    about: z.string().optional(),
+    address: z.string().optional(),
+    language: z.string().optional(),
+  }),
+});
 
-// export const userValidation = {
-//   userSchema,
-//   updateUserSchema,
-// };
+export const UserValidation = {
+  createUserSchema,
+  updateUserSchema,
+};

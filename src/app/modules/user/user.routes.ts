@@ -1,12 +1,28 @@
 import express from 'express';
 import { UserControllers } from './user.controller';
+import auth from '../../middlewares/auth';
+import { userRole } from './user.constant';
+import { UserValidation } from './user.validation';
+import { fileUploader } from '../../helper/fileUploder';
+import validateRequest from '../../middlewares/validateRequest';
 
 const router = express.Router();
 
 // Route: POST /api/v1/users
-router.post('/create-user', UserControllers.createUser);
-router.get('/:id', UserControllers.getUserProfile);
-router.patch('/:id', UserControllers.updateUserProfile);
+router.get('/:id', auth(userRole.client), UserControllers.getUserProfile);
+
+router.patch(
+  '/:id',
+  auth(userRole.client, userRole.professional, userRole.admin),
+  fileUploader.upload.single('image'),
+  UserControllers.updatePersonalDetails,
+);
+
+router.delete(
+  '/:id',
+  auth(userRole.client, userRole.professional, userRole.admin),
+  UserControllers.deleteAccount,
+);
 
 export const UserRoutes = router;
 

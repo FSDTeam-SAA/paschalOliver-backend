@@ -4,31 +4,23 @@ import pagination, { IOption } from '../../helper/pagenation';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 
-const createUser = async (payload: IUser) => {
-  const result = await User.create(payload);
-  if (!result) {
-    throw new AppError(400, 'Failed to create user');
-  }
-  return result;
-};
-
 const getUserProfile = async (userId: string) => {
   const result = await User.findById(userId);
   return result;
 };
 
-const updateUserProfile = async (userId: string, payload: Partial<IUser>) => {
-  const result = await User.findByIdAndUpdate(userId, payload, {
+const updatePersonalDetails = async (id: string, payload: Partial<IUser>) => {
+  const result = await User.findByIdAndUpdate(id, payload, {
     new: true,
     runValidators: true,
   });
+
   return result;
 };
 
 export const UserServices = {
-  createUser,
   getUserProfile,
-  updateUserProfile,
+  updatePersonalDetails,
 };
 
 // const getAllUser = async (params: any, options: IOption) => {

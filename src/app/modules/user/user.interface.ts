@@ -11,4 +11,7 @@ export interface IUser {
   language?: string;
   couponCodes?: string;
   about?: string;
+  isActive: boolean;
+  otp?: string;
+  otpExpires?: Date;
 }

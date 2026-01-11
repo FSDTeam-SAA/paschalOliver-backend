@@ -2,16 +2,7 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import pick from '../../helper/pick';
 import { UserServices } from './user.service';
-
-const createUser = catchAsync(async (req, res) => {
-  const result = await UserServices.createUser(req.body);
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'User created successfully',
-    data: result,
-  });
-});
+import { fileUploader } from '../../helper/fileUploder';
 
 const getUserProfile = catchAsync(async (req, res) => {
   const { id } = req.params;
@@ -25,22 +16,52 @@ const getUserProfile = catchAsync(async (req, res) => {
   });
 });
 
-const updateUserProfile = catchAsync(async (req, res) => {
+const updatePersonalDetails = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await UserServices.updateUserProfile(id as string, req.body);
+  const { name, email, phone, about } = req.body;
+  const updatedData: any = {
+    name,
+    email,
+    phone,
+    about,
+  };
+
+  if (req.file) {
+    const { url } = await fileUploader.uploadToCloudinary(req.file);
+    updatedData.image = url;
+  }
+
+  const result = await UserServices.updatePersonalDetails(
+    id as string,
+    updatedData,
+  );
 
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: 'User profile updated successfully',
+    message: 'Personal details updated successfully',
     data: result,
   });
 });
 
+const deleteAccount = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  // Soft Delete: Set isActive to false
+  await UserServices.updatePersonalDetails(id as string, { isActive: false });
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Account deactivated successfully',
+    data: null,
+  });
+});
+
 export const UserControllers = {
-  createUser,
   getUserProfile,
-  updateUserProfile,
+  updatePersonalDetails,
+  deleteAccount,
 };
 
 // const getAllUser = catchAsync(async (req, res) => {
