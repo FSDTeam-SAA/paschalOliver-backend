@@ -14,7 +14,7 @@ router.post('/reset-password', authController.resetPassword);
 router.post('/logout', authController.logoutUser);
 router.post(
   '/change-password',
-  auth(userRole.admin, userRole.user, userRole.contractor),
+  auth(userRole.admin, userRole.client, userRole.professional),
   authController.changePassword,
 );
 

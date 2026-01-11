@@ -1,21 +1,16 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { JwtPayload, Secret } from 'jsonwebtoken';
 import config from '../../config';
 import AppError from '../../error/appError';
 import { IUser } from '../user/user.interface';
-import User from '../user/user.model';
 import { jwtHelpers } from '../../helper/jwtHelpers';
 import sendMailer from '../../helper/sendMailer';
 import bcrypt from 'bcryptjs';
 import createOtpTemplate from '../../utils/createOtpTemplate';
+import { User } from '../user/user.model';
 
 const registerUser = async (payload: Partial<IUser>) => {
   const exist = await User.findOne({ email: payload.email });
   if (exist) throw new AppError(400, 'User already exists');
-
-  const idx = Math.floor(Math.random() * 100);
-  payload.profileImage = `https://avatar.iran.liara.run/public/${idx}.png`;
 
   const user = await User.create(payload);
 
@@ -23,7 +18,7 @@ const registerUser = async (payload: Partial<IUser>) => {
 };
 
 const loginUser = async (payload: Partial<IUser>) => {
-  const user = await User.findOne({ email: payload.email });
+  const user = await User.findOne({ email: payload.email }).select('+password');
   if (!user) throw new AppError(401, 'User not found');
   if (!payload.password) throw new AppError(400, 'Password is required');
 
@@ -32,7 +27,6 @@ const loginUser = async (payload: Partial<IUser>) => {
     user.password,
   );
   if (!isPasswordMatched) throw new AppError(401, 'Password not matched');
-  if (!user.verified) throw new AppError(403, 'Please verify your email first');
 
   const accessToken = jwtHelpers.genaretToken(
     { id: user._id, role: user.role, email: user.email },
@@ -74,13 +68,15 @@ const forgotPassword = async (email: string) => {
   if (!user) throw new AppError(401, 'User not found');
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
   user.otp = otp;
-  user.otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+  user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+
   await user.save();
 
   await sendMailer(
     user.email,
-    user.firstName + ' ' + user.lastName,
+    'Reset Password OTP',
     createOtpTemplate(otp, user.email, 'Your Company'),
   );
 
@@ -88,16 +84,20 @@ const forgotPassword = async (email: string) => {
 };
 
 const verifyEmail = async (email: string, otp: string) => {
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select('+otp +otpExpires');
   if (!user) throw new AppError(401, 'User not found');
+  console.log('DB OTP:', user.otp, 'Input OTP:', otp);
+  console.log('DB Expires:', user.otpExpires);
+  console.log('Current Time:', new Date());
 
-  if (user.otp !== otp || !user.otpExpiry || user.otpExpiry < new Date()) {
+  if (user.otp !== otp || !user.otpExpires || user.otpExpires < new Date()) {
     throw new AppError(400, 'Invalid or expired OTP');
   }
 
-  user.verified = true;
-  (user as any).otp = undefined;
-  (user as any).otpExpiry = undefined;
+  user.isActive = true;
+  user.otp = undefined as any;
+  user.otpExpires = undefined as any;
+
   await user.save();
 
   return { message: 'Email verified successfully' };
@@ -137,7 +137,7 @@ const changePassword = async (
   oldPassword: string,
   newPassword: string,
 ) => {
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select('+password');
   if (!user) throw new AppError(404, 'User not found');
   const isPasswordMatched = await bcrypt.compare(oldPassword, user.password);
   if (!isPasswordMatched) throw new AppError(400, 'Password not matched');
