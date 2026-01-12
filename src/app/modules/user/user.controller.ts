@@ -5,8 +5,8 @@ import { UserServices } from './user.service';
 import { fileUploader } from '../../helper/fileUploder';
 
 const getUserProfile = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const result = await UserServices.getUserProfile(id as string);
+  const userId = req.user.id;
+  const result = await UserServices.getUserProfile(userId);
 
   sendResponse(res, {
     statusCode: 200,
@@ -17,7 +17,7 @@ const getUserProfile = catchAsync(async (req, res) => {
 });
 
 const updatePersonalDetails = catchAsync(async (req, res) => {
-  const { id } = req.params;
+  const userId = req.user.id;
   const { name, email, phone, about } = req.body;
   const updatedData: any = {
     name,
@@ -31,10 +31,7 @@ const updatePersonalDetails = catchAsync(async (req, res) => {
     updatedData.image = url;
   }
 
-  const result = await UserServices.updatePersonalDetails(
-    id as string,
-    updatedData,
-  );
+  const result = await UserServices.updatePersonalDetails(userId, updatedData);
 
   sendResponse(res, {
     statusCode: 200,
@@ -45,10 +42,10 @@ const updatePersonalDetails = catchAsync(async (req, res) => {
 });
 
 const deleteAccount = catchAsync(async (req, res) => {
-  const { id } = req.params;
+  const userId = req.user.id;
 
   // Soft Delete: Set isActive to false
-  await UserServices.updatePersonalDetails(id as string, { isActive: false });
+  await UserServices.updatePersonalDetails(userId, { isActive: false });
 
   sendResponse(res, {
     statusCode: 200,
@@ -58,10 +55,24 @@ const deleteAccount = catchAsync(async (req, res) => {
   });
 });
 
+const updateUserLanguage = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const { language } = req.body;
+  const result = await UserServices.updateUserLanguage(userId, language);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Language updated successfully',
+    data: result,
+  });
+});
+
 export const UserControllers = {
   getUserProfile,
   updatePersonalDetails,
   deleteAccount,
+  updateUserLanguage,
 };
 
 // const getAllUser = catchAsync(async (req, res) => {

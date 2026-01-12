@@ -18,9 +18,19 @@ const updatePersonalDetails = async (id: string, payload: Partial<IUser>) => {
   return result;
 };
 
+const updateUserLanguage = async (userId: string, language: string) => {
+  const result = await User.findByIdAndUpdate(
+    userId,
+    { language },
+    { new: true, runValidators: true },
+  );
+  return result;
+};
+
 export const UserServices = {
   getUserProfile,
   updatePersonalDetails,
+  updateUserLanguage,
 };
 
 // const getAllUser = async (params: any, options: IOption) => {

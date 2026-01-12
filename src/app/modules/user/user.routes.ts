@@ -9,19 +9,25 @@ import validateRequest from '../../middlewares/validateRequest';
 const router = express.Router();
 
 // Route: POST /api/v1/users
-router.get('/:id', auth(userRole.client), UserControllers.getUserProfile);
+router.get('/me', auth(userRole.client), UserControllers.getUserProfile);
 
 router.patch(
-  '/:id',
+  '/me',
   auth(userRole.client, userRole.professional, userRole.admin),
   fileUploader.upload.single('image'),
   UserControllers.updatePersonalDetails,
 );
 
 router.delete(
-  '/:id',
+  '/me',
   auth(userRole.client, userRole.professional, userRole.admin),
   UserControllers.deleteAccount,
+);
+
+router.patch(
+  '/change-language',
+  auth(userRole.client, userRole.professional, userRole.admin),
+  UserControllers.updateUserLanguage,
 );
 
 export const UserRoutes = router;
