@@ -1,14 +1,18 @@
-import { IProfessional } from './professional.interface';
 import { Professional } from './professional.model';
+import { IProfessional } from './professional.interface';
 
 const updateProfessionalProfile = async (
   userId: string,
   payload: Partial<IProfessional>,
 ) => {
   const result = await Professional.findOneAndUpdate(
-    { user: userId }, // Find by User ID
+    { user: userId },
     payload,
-    { new: true, upsert: true }, // Create if not found, return updated doc
+    {
+      new: true,
+      upsert: true,
+      runValidators: true,
+    },
   );
   return result;
 };

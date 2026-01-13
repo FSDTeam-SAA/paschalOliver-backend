@@ -13,7 +13,8 @@ export interface IIdentity {
   documentType: 'Government ID' | 'Passport';
   documentNumber: string;
   documentCountry: string;
-  documentImage: string;
+  documentFrontImage: string;
+  documentBackImage: string;
 }
 
 export interface IAddress {
@@ -25,13 +26,24 @@ export interface IAddress {
   region: string;
 }
 
+export interface ITimeSlot {
+  startTime: string;
+  endTime: string;
+}
+
+export interface IDaySchedule {
+  day: string;
+  isAvailable: boolean;
+  slots: ITimeSlot[];
+}
+
 export interface IProfessional {
   user: Types.ObjectId;
 
-  // -- New Profile Information --
   personalDetails: IPersonalDetails;
   identity: IIdentity;
   address: IAddress;
+  workSchedule: IDaySchedule[];
 
   country: string;
   city: string;

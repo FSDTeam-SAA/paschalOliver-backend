@@ -27,7 +27,8 @@ const professionalSchema = new Schema<IProfessional>(
       },
       documentNumber: { type: String, default: '' },
       documentCountry: { type: String, default: '' },
-      documentImage: { type: String, default: '' },
+      documentFrontImage: { type: String, default: '' },
+      documentBackImage: { type: String, default: '' },
     },
 
     address: {
@@ -38,6 +39,19 @@ const professionalSchema = new Schema<IProfessional>(
       country: { type: String, default: '' },
       region: { type: String, default: '' },
     },
+
+    workSchedule: [
+      {
+        day: { type: String, required: true },
+        isAvailable: { type: Boolean, default: false },
+        slots: [
+          {
+            startTime: { type: String },
+            endTime: { type: String },
+          },
+        ],
+      },
+    ],
 
     country: { type: String, default: '' },
     city: { type: String, default: '' },
