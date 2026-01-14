@@ -4,5 +4,6 @@ export interface ISubcategory {
   title: string;
   image: string;
   categoryId: Types.ObjectId;
+  serviceId: Types.ObjectId[];
   isActive: boolean;
 }

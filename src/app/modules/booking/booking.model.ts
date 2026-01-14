@@ -15,7 +15,7 @@ const bookingSchema = new Schema<IBooking>(
     },
     service: {
       type: Schema.Types.ObjectId,
-      ref: 'Subcategory',
+      ref: 'Service',
       required: true,
     },
     address: {
@@ -64,8 +64,6 @@ bookingSchema.post('save', async function (doc) {
     if (doc.status === 'accepted') historyStatus = 'accepted';
     else if (doc.status === 'completed') historyStatus = 'completed';
     else if (doc.status === 'cancelled') {
-      // You can add logic here to determine if cancelled by client or professional
-      // For now, defaulting to cancelled_by_client
       historyStatus = 'cancelled_by_client';
     }
 
