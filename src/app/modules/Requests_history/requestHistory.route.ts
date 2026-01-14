@@ -1,0 +1,42 @@
+import express from 'express';
+import { RequestHistoryControllers } from './requestHistory.controller';
+import validateRequest from '../../middlewares/validateRequest';
+import { RequestHistoryValidation } from './requestHistory.validation';
+import auth from '../../middlewares/auth';
+import { userRole } from '../user/user.constant';
+
+const router = express.Router();
+
+// Get request history with optional status filter
+router.get(
+  '/',
+  auth(userRole.professional),
+  validateRequest(RequestHistoryValidation.getRequestHistoryQueryValidation),
+  RequestHistoryControllers.getRequestHistory,
+);
+
+// Get single request history details
+router.get(
+  '/:id',
+  auth(userRole.professional),
+  validateRequest(RequestHistoryValidation.getRequestHistoryDetailsValidation),
+  RequestHistoryControllers.getRequestHistoryDetails,
+);
+
+// Accept a request
+router.patch(
+  '/:id/accept',
+  auth(userRole.professional),
+  validateRequest(RequestHistoryValidation.acceptRequestValidation),
+  RequestHistoryControllers.acceptRequest,
+);
+
+// Reject a request
+router.patch(
+  '/:id/reject',
+  auth(userRole.professional),
+  validateRequest(RequestHistoryValidation.rejectRequestValidation),
+  RequestHistoryControllers.rejectRequest,
+);
+
+export const RequestHistoryRoutes = router;

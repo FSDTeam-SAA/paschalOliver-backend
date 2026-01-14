@@ -7,6 +7,7 @@ import { AddressRoutes } from '../modules/address/address.route';
 import { BookingRoutes } from '../modules/booking/booking.route';
 import { LocationRoutes } from '../modules/location/location.route';
 import { ProfessionalRoutes } from '../modules/professional/professional.route';
+import { RequestHistoryRoutes } from '../modules/Requests_history/requestHistory.route';
 
 const router = Router();
 
@@ -42,6 +43,10 @@ const moduleRoutes = [
   {
     path: '/professional',
     route: ProfessionalRoutes,
+  },
+  {
+    path: '/request-history',
+    route: RequestHistoryRoutes,
   },
 ];
 
