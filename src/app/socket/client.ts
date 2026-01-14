@@ -13,7 +13,7 @@ interface MessagePayload {
 }
 
 const SERVER_URL = 'http://localhost:5000';
-const USER_ID = 'user123';
+const USER_ID = '69680f25fda92b3c5a16e4ca';
 const CHAT_ID = 'chat123';
 
 const socket: Socket = socketIoClient(SERVER_URL, {
@@ -35,17 +35,7 @@ socket.on('connect', () => {
     socket.emit('stopTyping', typingPayload);
   }, 3000);
 
-  // Send new message
-  const messagePayload: MessagePayload = {
-    chatId: CHAT_ID,
-    userId: USER_ID,
-    content: 'Hello everyone! 🚀',
-  };
 
-  setTimeout(() => {
-    socket.emit('newMessage', messagePayload);
-    console.log(`📤 Sent message: ${messagePayload.content}`);
-  }, 2000);
 });
 
 // Listen for typing events

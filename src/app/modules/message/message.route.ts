@@ -1,36 +1,21 @@
 import express from 'express';
-import { ListingControllers } from './listing.controller';
-import validateRequest from '../../middlewares/validateRequest';
-import { ListingValidations } from './listing.validation';
+
 import auth from '../../middlewares/auth';
 import { userRole } from '../user/user.constant';
+import { getMessagesController, sendMessageController } from './message.controller';
 
 const router = express.Router();
 
 router.post(
-  '/',
-  auth(userRole.professional),
-  validateRequest(ListingValidations.createListingValidationSchema),
-  ListingControllers.createListing,
+  '/send-message',
+  auth(userRole.professional, userRole.client),
+  sendMessageController,
 );
 
 router.get(
-  '/my-listings',
-  auth(userRole.professional),
-  ListingControllers.getMyListings,
+  '/get-messages/:conversationId',
+  auth(userRole.professional, userRole.client),
+  getMessagesController,
 );
 
-router.patch(
-  '/:id',
-  auth(userRole.professional),
-  validateRequest(ListingValidations.updateListingValidationSchema),
-  ListingControllers.updateListing,
-);
-
-router.delete(
-  '/:id',
-  auth(userRole.professional),
-  ListingControllers.deleteListing,
-);
-
-export const ListingRoutes = router;
+export const MessageRoutes = router;
