@@ -10,6 +10,13 @@ const subcategorySchema = new Schema<ISubcategory>(
       ref: 'Category',
       required: true,
     },
+    serviceId: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Service',
+        required: true,
+      },
+    ],
     isActive: { type: Boolean, default: true },
   },
   {
