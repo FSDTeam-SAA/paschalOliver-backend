@@ -6,7 +6,8 @@ export type TBookingStatus =
   | 'accepted'
   | 'in_progress'
   | 'completed'
-  | 'cancelled';
+  | 'cancelled_by_client'
+  | 'cancelled_by_professional';
 
 export interface IBooking {
   customer: Types.ObjectId;
