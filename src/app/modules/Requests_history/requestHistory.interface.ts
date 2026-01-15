@@ -11,3 +11,9 @@ export interface IRequestHistory {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface IrequestQuery {
+  status?: TRequestHistoryStatus;
+  page: number;
+  limit: number;
+}

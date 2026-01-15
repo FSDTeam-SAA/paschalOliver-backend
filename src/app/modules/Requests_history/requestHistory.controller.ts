@@ -1,19 +1,24 @@
 import { RequestHandler } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
-import { RequestHistoryServices } from './requestHistory.service';
+
 import httpStatus from 'http-status-codes';
 
+import { IrequestQuery } from './requestHistory.interface';
+import { RequestHistoryServices } from './requestHistory.service';
+
 // Get professional's request history
+
 const getRequestHistory: RequestHandler = catchAsync(async (req, res) => {
+  console.log('controller started');
   const professionalId = req.user.id;
-  const { status, page, limit } = req.query;
+  const { status, page, limit } = req.query as unknown as IrequestQuery;
 
   const result = await RequestHistoryServices.getRequestHistory(
     professionalId,
-    status as any,
-    page as unknown as number,
-    limit as unknown as number,
+    status,
+    Number(page) || 1,
+    Number(limit) || 10,
   );
 
   sendResponse(res, {

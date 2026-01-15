@@ -4,6 +4,7 @@ import { TRequestHistoryStatus } from './requestHistory.constant';
 
 import httpStatus from 'http-status-codes';
 import AppError from '../../error/appError';
+import { Listing } from '../listing/listing.model';
 
 // Get professional's request history with filtering and pagination
 const getRequestHistory = async (
@@ -12,6 +13,7 @@ const getRequestHistory = async (
   page: number = 1,
   limit: number = 10,
 ) => {
+  console.log('serviced called');
   const skip = (page - 1) * limit;
 
   const query: any = { professional: professionalId };
@@ -58,7 +60,10 @@ const getRequestHistory = async (
 
 // Get single request history details with calculated fields
 const getRequestHistoryDetails = async (requestId: string) => {
+  //
+  console.log(requestId);
   const request = await RequestHistory.findById(requestId)
+
     .populate({
       path: 'customer',
       select: 'name email phone image role',
@@ -84,46 +89,31 @@ const getRequestHistoryDetails = async (requestId: string) => {
   if (!request) {
     throw new AppError(httpStatus.NOT_FOUND, 'Request history not found');
   }
+  console.log('piorg', request);
 
-  // TODO: Calculate payment details based on professional's hourly rate
-  // Example: const hourlyRate = await getProfessionalRate(request.professional);
-  // const paymentAmount = (request.booking.durationInMinutes / 60) * hourlyRate;
+  // const hourlyRate = await getProfessionalRate(request.professional);
+  const listing = await Listing.findOne({
+    professional: request.professional?._id,
+    service: request.service?._id,
+  });
+  const booking = request.booking as any;
+  const hourlyRate = listing?.price;
+  // console.log('liorwe', listing);
+  // console.log('MMMMM', booking.durationInMinutes);
+  const paymentAmount = Number(
+    ((booking.durationInMinutes / 60) * hourlyRate!).toFixed(2),
+  );
+  // console.log('weth3roitjhoriwejhgoriegiorehjgi', paymentAmount);
   const paymentDetails = {
-    // amount: paymentAmount,
-    // currency: 'USD',
-    // calculated: true,
-    message: 'Payment calculation pending - hourly rate not implemented',
-  };
-
-  // TODO: Calculate distance from professional's location to customer address
-  // Example: const professionalLocation = await getProfessionalLocation(professionalId);
-  // const distance = calculateDistance(
-  //   professionalLocation.coordinates,
-  //   request.address.coordinates
-  // );
-  const distanceInfo = {
-    // value: distance,
-    // unit: 'km',
-    message: 'Distance calculation pending - location integration required',
-  };
-
-  // TODO: Calculate estimated time/duration from map provider (Google Maps, Mapbox, etc.)
-  // Example: const travelTime = await getMapProviderDuration(
-  //   professionalLocation.coordinates,
-  //   request.address.coordinates
-  // );
-  const durationInfo = {
-    // walkingTime: travelTime.walking,
-    // drivingTime: travelTime.driving,
-    message: 'Duration calculation pending - map provider integration required',
+    amount: paymentAmount,
+    currency: 'USD',
+    calculated: true,
   };
 
   return {
     ...request,
     calculatedFields: {
       payment: paymentDetails,
-      distance: distanceInfo,
-      travelDuration: durationInfo,
     },
   };
 };
@@ -221,7 +211,7 @@ const rejectRequest = async (professionalId: string, requestId: string) => {
   // Update corresponding Booking status
   const booking = await Booking.findById(requestHistory.booking);
   if (booking) {
-    booking.status = 'cancelled';
+    booking.status = 'cancelled_by_professional';
     await booking.save();
   }
 
