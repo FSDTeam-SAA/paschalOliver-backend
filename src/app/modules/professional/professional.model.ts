@@ -1,5 +1,20 @@
 import { Schema, model } from 'mongoose';
-import { IProfessional } from './professional.interface';
+import { IProfessional, IProfileDetails } from './professional.interface';
+
+const profileDetailsSchema = new Schema<IProfileDetails>(
+  {
+    experienceLevel: { type: String },
+    cleaningTypes: { type: [String], default: [] },
+    additionalTasks: { type: [String], default: [] },
+    isPetFriendly: { type: Boolean },
+    hasIndustryExperience: { type: Boolean },
+    employmentStatus: { type: String },
+    currentSituation: { type: String },
+  },
+  {
+    _id: false, // Prevents creating a separate id for this sub-document
+  },
+);
 
 const professionalSchema = new Schema<IProfessional>(
   {
@@ -60,6 +75,15 @@ const professionalSchema = new Schema<IProfessional>(
     isVerified: { type: Boolean, default: false },
     totalJobs: { type: Number, default: 0 },
     averageRating: { type: Number, default: 0 },
+
+    profileDetails: {
+      type: profileDetailsSchema,
+      default: {},
+    },
+    gallery: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

@@ -50,9 +50,67 @@ const deleteListing = async (id: string) => {
   return result;
 };
 
+const updateProfileDetails = async (userId: string, payload: any) => {
+  const result = await Professional.findOneAndUpdate(
+    { user: userId },
+    {
+      $set: {
+        profileDetails: payload,
+      },
+    },
+    { new: true, runValidators: true },
+  );
+  if (!result) {
+    throw new AppError(404, 'Professional Profile not found');
+  }
+  return result;
+};
+
+const addToGallery = async (userId: string, imageUrls: string[]) => {
+  const result = await Professional.findOneAndUpdate(
+    { user: userId },
+    {
+      $addToSet: { gallery: { $each: imageUrls } },
+    },
+    { new: true },
+  );
+
+  if (!result) {
+    throw new AppError(404, 'Professional profile not found');
+  }
+  return result.gallery;
+};
+
+const getGallery = async (userId: string) => {
+  const result = await Professional.findOne({ user: userId }).select('gallery');
+  if (!result) {
+    throw new AppError(404, 'Professional profile not found');
+  }
+  return result.gallery;
+};
+
+const removeFromGallery = async (userId: string, imageToRemove: string) => {
+  const result = await Professional.findOneAndUpdate(
+    { user: userId },
+    {
+      $pull: { gallery: imageToRemove },
+    },
+    { new: true },
+  );
+
+  if (!result) {
+    throw new AppError(404, 'Professional profile not found');
+  }
+  return result.gallery;
+};
+
 export const ListingServices = {
   createListing,
   getMyListings,
   updateListing,
   deleteListing,
+  updateProfileDetails,
+  addToGallery,
+  getGallery,
+  removeFromGallery,
 };
