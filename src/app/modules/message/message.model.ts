@@ -19,6 +19,7 @@ const messageSchema = new Schema<IMessage>(
       ref: 'User',
       required: true,
     },
+    isDeleted: { type: Boolean, default: false },
     content: { type: String, required: true },
     attachments: { type: [String], required: false },
     isRead: { type: Boolean, default: false },

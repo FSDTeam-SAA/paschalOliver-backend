@@ -73,7 +73,7 @@ const userId = req.user.id;
 export const markMessageAsReadController = catchAsync(async (req, res) => {
   const { messageId } = req.params;
 
-  const message = await MessageServices.markMessageAsRead(messageId as string);
+  const message = await MessageServices.markMessageAsRead(messageId as string , req.user.id);
 
   sendResponse(res, {
     statusCode: 200,

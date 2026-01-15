@@ -8,17 +8,6 @@ interface JoinChatPayload {
   chatId: string;
 }
 
-interface TypingPayload {
-  chatId: string;
-  userId: string;
-}
-
-interface MessagePayload {
-  chatId: string;
-  userId: string;
-  content: string;
-}
-
 export const initSocket = (httpServer: http.Server): Server => {
   if (io) return io;
 
@@ -50,33 +39,33 @@ export const initSocket = (httpServer: http.Server): Server => {
       console.log(`🚪 Left chat room: ${chatId}`);
     });
 
-    // Typing
-    socket.on('typing', ({ chatId, userId }: TypingPayload) => {
-      if (!chatId || !userId) return;
-      socket.broadcast.to(chatId).emit('typing', { userId });
-    });
+    // // Typing
+    // socket.on('typing', ({ chatId, userId }: TypingPayload) => {
+    //   if (!chatId || !userId) return;
+    //   socket.broadcast.to(chatId).emit('typing', { userId });
+    // });
 
-    socket.on('stopTyping', ({ chatId, userId }: TypingPayload) => {
-      if (!chatId || !userId) return;
-      socket.broadcast.to(chatId).emit('stopTyping', { userId });
-    });
+    // socket.on('stopTyping', ({ chatId, userId }: TypingPayload) => {
+    //   if (!chatId || !userId) return;
+    //   socket.broadcast.to(chatId).emit('stopTyping', { userId });
+    // });
 
-    // New message
-    socket.on('newMessage', ({ chatId, userId, content }: MessagePayload) => {
-      if (!chatId || !userId || !content) return;
+    // // New message
+    // socket.on('newMessage', ({ chatId, userId, content }: MessagePayload) => {
+    //   if (!chatId || !userId || !content) return;
 
-      console.log(
-        `📩 New message from ${userId} in chat ${chatId}: ${content}`,
-      );
+    //   console.log(
+    //     `📩 New message from ${userId} in chat ${chatId}: ${content}`,
+    //   );
 
-      // Broadcast to room
-      socket.to(chatId).emit('newMessage', {
-        chatId,
-        userId,
-        content,
-        timestamp: new Date().toISOString(),
-      });
-    });
+    //   // Broadcast to room
+    //   socket.to(chatId).emit('newMessage', {
+    //     chatId,
+    //     userId,
+    //     content,
+    //     timestamp: new Date().toISOString(),
+    //   });
+    // });
 
     // Disconnect
     socket.on('disconnect', () => {

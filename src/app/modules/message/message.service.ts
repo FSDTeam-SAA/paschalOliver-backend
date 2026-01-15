@@ -1,7 +1,7 @@
 import AppError from '../../error/appError';
 import { Message } from './message.model';
 import Conversation from '../conversation/conversation.model';
-import mongoose from 'mongoose';
+import { Types } from 'mongoose';
 
 const sendMessage = async (
   senderId: string,
@@ -10,22 +10,19 @@ const sendMessage = async (
   content: string,
   attachments?: string[],
 ) => {
-  // 1️⃣ Find conversation
+  // Find conversation
   const conversation = await Conversation.findById(conversationId);
   if (!conversation) {
     throw new AppError(404, 'Conversation not found');
   }
 
-  // 2️⃣ Check if sender is blocked
-  if (conversation.blockedBy?.includes(senderId as any)) {
-    throw new AppError(
-      403,
-      'You are blocked from sending messages in this conversation',
-    );
+  // Check if user is a participant
+  if (!conversation.participants.includes(new Types.ObjectId(senderId))) {
+    throw new AppError(403, 'You are not a participant of this conversation');
   }
 
-  // 3️⃣ Create message
-  const message = await Message.create({
+  // Create message
+  const createdMessage = await Message.create({
     conversation: conversation._id,
     sender: senderId,
     receiver: receiverId,
@@ -34,85 +31,48 @@ const sendMessage = async (
     isRead: false,
   });
 
-  // 4️⃣ Update lastMessage in conversation
-  conversation.lastMessage = message._id;
+  const message = await Message.findById(createdMessage._id)
+    .populate('sender', 'name email image')
+    .populate('receiver', 'name email image');
+
+  // Update lastMessage in conversation
+  conversation.lastMessage = createdMessage._id;
   await conversation.save();
 
   return message;
 };
 
 const getMessages = async (conversationId: string, userId: string) => {
-  // 1️⃣ Check if conversation exists
+  // Check if conversation exists
   const conversation = await Conversation.findById(conversationId);
   if (!conversation) {
     throw new AppError(404, 'Conversation not found');
   }
 
-  // 2️⃣ Check if user is a participant
+  // Check if user is a participant
   if (!conversation.participants.includes(userId as any)) {
     throw new AppError(403, 'You are not a participant of this conversation');
   }
 
-  // 3️⃣ Aggregation to get messages with populated sender & receiver
-  const messages = await Message.aggregate([
-    // Match messages in this conversation
-    { $match: { conversation: new mongoose.Types.ObjectId(conversationId) } },
-
-    // Sort by creation time ascending
-    { $sort: { createdAt: 1 } },
-
-    // Lookup sender details
-    {
-      $lookup: {
-        from: 'users', // collection name in MongoDB
-        localField: 'sender',
-        foreignField: '_id',
-        as: 'sender',
-      },
-    },
-    { $unwind: '$sender' }, // flatten array
-
-    // Lookup receiver details
-    {
-      $lookup: {
-        from: 'users',
-        localField: 'receiver',
-        foreignField: '_id',
-        as: 'receiver',
-      },
-    },
-    { $unwind: '$receiver' }, // flatten array
-
-    // Project only required fields
-    {
-      $project: {
-        _id: 1,
-        conversation: 1,
-        content: 1,
-        attachments: 1,
-        isRead: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        'sender._id': 1,
-        'sender.name': 1,
-        'sender.email': 1,
-        'receiver._id': 1,
-        'receiver.name': 1,
-        'receiver.email': 1,
-      },
-    },
-  ]);
-
-  if (!messages || messages.length === 0) {
-    throw new AppError(404, 'No messages found for this conversation');
-  }
+  // get messages
+  const messages = await Message.find({
+    conversation: conversationId,
+    isDeleted: false,
+  })
+    .sort({ createdAt: -1 })
+    .populate('sender', 'name email image')
+    .populate('receiver', 'name email image')
+    .populate({
+      path: 'attachments',
+      select: 'name size url',
+    });
 
   return messages;
 };
 
-const markMessageAsRead = async (messageId: string) => {
+const markMessageAsRead = async (messageId: string, userId: string) => {
   const message = await Message.findByIdAndUpdate(
-    messageId,
+    { _id: messageId, receiver: userId },
     { isRead: true },
     { new: true },
   );
@@ -125,7 +85,13 @@ const markMessageAsRead = async (messageId: string) => {
 };
 
 const deleteMessage = async (messageId: string) => {
-  const message = await Message.findByIdAndDelete(messageId);
+  const message = await Message.findByIdAndUpdate(
+    { _id: messageId, isDeleted: false },
+    {
+      isDeleted: true,
+    },
+    { new: true },
+  );
   if (!message) {
     throw new AppError(404, 'Message not found');
   }
