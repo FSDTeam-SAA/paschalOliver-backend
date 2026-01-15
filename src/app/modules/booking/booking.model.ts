@@ -42,7 +42,14 @@ const bookingSchema = new Schema<IBooking>(
     },
     status: {
       type: String,
-      enum: ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'],
+      enum: [
+        'pending',
+        'accepted',
+        'in_progress',
+        'completed',
+        'cancelled_by_client',
+        'cancelled_by_professional',
+      ],
       default: 'pending',
     },
   },
@@ -63,8 +70,10 @@ bookingSchema.post('save', async function (doc) {
     let historyStatus = 'new';
     if (doc.status === 'accepted') historyStatus = 'accepted';
     else if (doc.status === 'completed') historyStatus = 'completed';
-    else if (doc.status === 'cancelled') {
+    else if (doc.status === 'cancelled_by_client') {
       historyStatus = 'cancelled_by_client';
+    } else if (doc.status === 'cancelled_by_professional') {
+      historyStatus = 'cancelled_by_professional';
     }
 
     // Check if request history already exists for this booking
