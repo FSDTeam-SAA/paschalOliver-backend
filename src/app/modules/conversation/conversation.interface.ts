@@ -2,11 +2,18 @@ import { Types } from 'mongoose';
 
 export interface IConversation {
   participants: Types.ObjectId[]; // Users in conversation
-  lastMessage?: Types.ObjectId; // Last message sent
-  blockedBy?: Types.ObjectId[]; // Users who blocked this conversation
-  mutedBy?: Types.ObjectId[]; // Users who muted notifications
-  isArchived?: boolean; // Soft archive for the conversation
-  isDeleted?: boolean; // Soft delete flag
+  lastMessage?: Types.ObjectId;
+
+  blockedUsers?: {
+    blocker: Types.ObjectId; // who blocked
+    blocked: Types.ObjectId; // who got blocked
+    blockedAt: Date;
+  }[];
+
+  mutedBy?: Types.ObjectId[];
+  isArchived?: boolean;
+  isDeleted?: boolean;
+
   createdAt: Date;
   updatedAt: Date;
 }

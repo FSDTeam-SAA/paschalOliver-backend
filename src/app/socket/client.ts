@@ -13,7 +13,7 @@ interface MessagePayload {
 }
 
 const SERVER_URL = 'http://localhost:5000';
-const USER_ID = '69680f25fda92b3c5a16e4ca';
+const USER_ID = '6967b0405f4b11f33de85641';
 const CHAT_ID = 'chat123';
 
 const socket: Socket = socketIoClient(SERVER_URL, {
@@ -46,6 +46,8 @@ socket.on('stopTyping', ({ userId }) =>
 
 // Listen for new messages
 socket.on('newMessage', (data: MessagePayload) => {
+  console.log(data);
+  
   console.log(`📩 New message from ${data.userId}: ${data.content}`);
 });
 

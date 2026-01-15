@@ -1,12 +1,12 @@
+import { Types } from 'mongoose';
 import Conversation from './conversation.model';
+import AppError from '../../error/appError';
 
 export const ConversationServices = {
   // Create or get existing conversation between participants
   async createConversation(participantIds: string[]) {
-    // Ensure participantIds are unique
     const uniqueParticipants = Array.from(new Set(participantIds));
 
-    // Check if conversation already exists
     let conversation = await Conversation.findOne({
       participants: {
         $all: uniqueParticipants,
@@ -16,7 +16,6 @@ export const ConversationServices = {
 
     if (conversation) return conversation;
 
-    // Create new conversation
     conversation = await Conversation.create({
       participants: uniqueParticipants,
     });
@@ -24,31 +23,117 @@ export const ConversationServices = {
     return conversation;
   },
 
-  // Block a user in a conversation
-  async blockUser(conversationId: string, userId: string) {
+  // ✅ Block a user in a conversation
+  async blockUser(
+    conversationId: string,
+    blockerId: string,
+    blockedUserId: string,
+  ) {
+    // Validate IDs
+    if (
+      !Types.ObjectId.isValid(conversationId) ||
+      !Types.ObjectId.isValid(blockerId) ||
+      !Types.ObjectId.isValid(blockedUserId)
+    ) {
+      throw new AppError(400, 'Invalid ID provided');
+    }
+
+    if (blockerId === blockedUserId) {
+      throw new AppError(400, 'You cannot block yourself');
+    }
+
+    // Ensure both users are participants
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      participants: { $all: [blockerId, blockedUserId] },
+    });
+
+    if (!conversation) {
+      throw new AppError(
+        403,
+        'Both users must be participants of this conversation',
+      );
+    }
+
+    // Prevent duplicate block
+    const alreadyBlocked = conversation.blockedUsers?.some(
+      (b) =>
+        b.blocker.toString() === blockerId &&
+        b.blocked.toString() === blockedUserId,
+    );
+
+    if (alreadyBlocked) {
+      throw new AppError(400, 'User already blocked');
+    }
+
+    // Add block
     return Conversation.findByIdAndUpdate(
       conversationId,
       {
-        $addToSet: { blockedBy: userId },
+        $push: {
+          blockedUsers: {
+            blocker: blockerId,
+            blocked: blockedUserId,
+            blockedAt: new Date(),
+          },
+        },
       },
       { new: true },
     );
   },
 
   // Unblock a user in a conversation
-  async unblockUser(conversationId: string, userId: string) {
-    return Conversation.findByIdAndUpdate(
+  //! need update FOR UNBLOCK USER ONLY WHO CAN BLOCK
+  async unblockUser(
+    conversationId: string,
+    blockerId: string,
+    blockedUserId: string,
+  ) {
+    // Validate IDs
+    if (
+      !Types.ObjectId.isValid(conversationId) ||
+      !Types.ObjectId.isValid(blockerId) ||
+      !Types.ObjectId.isValid(blockedUserId)
+    ) {
+      throw new AppError(400, 'Invalid ID provided');
+    }
+
+    // Ensure this block exists AND requester is the blocker
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      blockedUsers: {
+        $elemMatch: {
+          blocker: blockerId,
+          blocked: blockedUserId,
+        },
+      },
+    });
+
+    if (!conversation) {
+      throw new AppError(403, 'You can only unblock users you have blocked');
+    }
+
+    // Remove block
+    const updatedConversation = await Conversation.findByIdAndUpdate(
       conversationId,
       {
-        $pull: { blockedBy: userId },
+        $pull: {
+          blockedUsers: {
+            blocker: blockerId,
+            blocked: blockedUserId,
+          },
+        },
       },
       { new: true },
     );
-  },
 
-  // Get all conversations for a user
+    return updatedConversation;
+  },
   async getUserConversations(userId: string) {
-    return Conversation.find({ participants: userId })
+    return Conversation.find({
+      participants: userId,
+      isDeleted: false,
+    })
       .sort({ updatedAt: -1 })
       .populate('participants', 'name email')
       .populate('lastMessage');
