@@ -37,6 +37,19 @@ export interface IDaySchedule {
   slots: ITimeSlot[];
 }
 
+// information of interest
+export interface IProfileDetails {
+  experienceLevel?: string;
+  cleaningTypes?: string[];
+  additionalTasks?: string[];
+
+  // Screen: Status & Situation
+  isPetFriendly?: boolean;
+  hasIndustryExperience?: boolean;
+  employmentStatus?: string;
+  currentSituation?: string;
+}
+
 export interface IProfessional {
   user: Types.ObjectId;
 
@@ -52,4 +65,7 @@ export interface IProfessional {
   isVerified: boolean;
   totalJobs: number;
   averageRating: number;
+
+  profileDetails?: IProfileDetails;
+  gallery: [];
 }
