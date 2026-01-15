@@ -67,6 +67,10 @@ const getMessages = async (conversationId: string, userId: string) => {
       select: 'name size url',
     });
 
+  if (!messages.length) {
+    throw new AppError(404, 'Messages not found');
+  }
+
   return messages;
 };
 
@@ -85,16 +89,12 @@ const markMessageAsRead = async (messageId: string, userId: string) => {
 };
 
 const deleteMessage = async (messageId: string) => {
-  const message = await Message.findByIdAndUpdate(
-    { _id: messageId, isDeleted: false },
-    {
-      isDeleted: true,
-    },
-    { new: true },
-  );
+  const message = await Message.findOne({ _id: messageId, isDeleted: false });
   if (!message) {
     throw new AppError(404, 'Message not found');
   }
+  message.isDeleted = true;
+  await message.save();
   return message;
 };
 

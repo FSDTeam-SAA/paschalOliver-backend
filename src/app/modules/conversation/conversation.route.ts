@@ -6,7 +6,7 @@ import {
   createConversation,
   getUserConversations,
   blockUser,
-  unblockUser,
+  unblockUser,deleteConversation
 } from './conversation.controller';
 
 const router = express.Router();
@@ -28,6 +28,11 @@ router.post(
   '/unblock-user',
   auth(userRole.client, userRole.professional),
   unblockUser,
+);
+router.delete(
+  '/delete-conversation/:conversationId',
+  auth(userRole.client, userRole.professional),
+  deleteConversation,
 );
 
 export const ConversationRoutes = router;

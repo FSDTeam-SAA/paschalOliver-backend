@@ -103,10 +103,27 @@ export const getUserConversations = catchAsync(async (req, res) => {
     req.user.id,
   );
 
+  if (!conversations || !conversations.length) {
+    throw new AppError(404, 'No conversations found');
+  }
+
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: 'Conversations fetched successfully',
     data: conversations,
+  });
+});
+
+
+//delete conversation
+export const deleteConversation = catchAsync(async (req, res) => {
+  const { conversationId } = req.params;
+  const conversation = await ConversationServices.deleteConversation(conversationId as string, req.user.id);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Conversation deleted successfully',
+    data: conversation,
   });
 });
