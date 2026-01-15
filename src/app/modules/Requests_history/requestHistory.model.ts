@@ -20,7 +20,7 @@ const requestHistorySchema = new Schema<IRequestHistory>(
     },
     service: {
       type: Schema.Types.ObjectId,
-      ref: 'Subcategory',
+      ref: 'Service',
       required: true,
     },
     address: {

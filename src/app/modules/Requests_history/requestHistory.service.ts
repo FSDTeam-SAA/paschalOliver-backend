@@ -1,6 +1,6 @@
 import { RequestHistory } from './requestHistory.model';
 import { Booking } from '../booking/booking.model';
-import { TRequestHistoryStatus } from './requestHistory.constant';
+import { requestHistoryStatus } from './requestHistory.constant';
 
 import httpStatus from 'http-status-codes';
 import AppError from '../../error/appError';
@@ -9,29 +9,30 @@ import { Listing } from '../listing/listing.model';
 // Get professional's request history with filtering and pagination
 const getRequestHistory = async (
   professionalId: string,
-  status?: TRequestHistoryStatus,
+  status?: string,
   page: number = 1,
   limit: number = 10,
 ) => {
-  console.log('serviced called');
   const skip = (page - 1) * limit;
 
   const query: any = { professional: professionalId };
 
-  // If status is provided, filter by status
   if (status) {
-    query.status = status;
+    if (status === 'cancelled') {
+      query.status = {
+        $in: [
+          requestHistoryStatus.cancelled_by_client,
+          requestHistoryStatus.cancelled_by_professional,
+        ],
+      };
+    } else {
+      query.status = status;
+    }
   }
 
   const requests = await RequestHistory.find(query)
-    .populate({
-      path: 'customer',
-      select: 'name email phone image',
-    })
-    .populate({
-      path: 'service',
-      select: 'title image',
-    })
+    .populate({ path: 'customer', select: 'name email phone image' })
+    .populate({ path: 'service', select: 'title image' })
     .populate({
       path: 'address',
       select: 'address streetNumber addressDetails coordinates',
@@ -63,15 +64,15 @@ const getRequestHistoryDetails = async (requestId: string) => {
   //
   console.log(requestId);
   const request = await RequestHistory.findById(requestId)
-
-    .populate({
-      path: 'customer',
-      select: 'name email phone image role',
-    })
     .populate({
       path: 'service',
       select: 'title image',
     })
+    .populate({
+      path: 'customer',
+      select: 'name email phone image role',
+    })
+
     .populate({
       path: 'address',
       select: 'address streetNumber addressDetails coordinates',

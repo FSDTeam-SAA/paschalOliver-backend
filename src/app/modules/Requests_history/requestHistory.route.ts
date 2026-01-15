@@ -11,7 +11,7 @@ const router = express.Router();
 router.get(
   '/',
   auth(userRole.professional),
-  validateRequest(RequestHistoryValidation.getRequestHistoryQueryValidation),
+
   RequestHistoryControllers.getRequestHistory,
 );
 
@@ -19,7 +19,7 @@ router.get(
 router.get(
   '/:id',
   auth(userRole.professional),
-  validateRequest(RequestHistoryValidation.getRequestHistoryDetailsValidation),
+
   RequestHistoryControllers.getRequestHistoryDetails,
 );
 
