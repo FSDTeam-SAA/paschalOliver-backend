@@ -1,9 +1,5 @@
 import { io as socketIoClient, Socket } from 'socket.io-client';
 
-interface TypingPayload {
-  chatId: string;
-  userId: string;
-}
 
 interface MessagePayload {
   chatId: string;
