@@ -1,6 +1,7 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import Conversation from './conversation.model';
 import AppError from '../../error/appError';
+import { Message } from '../message/message.model';
 
 export const ConversationServices = {
   // Create or get existing conversation between participants
@@ -83,7 +84,6 @@ export const ConversationServices = {
   },
 
   // Unblock a user in a conversation
-  //! need update FOR UNBLOCK USER ONLY WHO CAN BLOCK
   async unblockUser(
     conversationId: string,
     blockerId: string,
@@ -130,12 +130,70 @@ export const ConversationServices = {
     return updatedConversation;
   },
   async getUserConversations(userId: string) {
+    console.log(userId);
+    
     return Conversation.find({
       participants: userId,
-      isDeleted: false,
     })
       .sort({ updatedAt: -1 })
       .populate('participants', 'name email')
       .populate('lastMessage');
   },
+  // Soft delete a conversation and its messages using a transaction
+  async deleteConversation(conversationId: string, userId: string) {
+    // Validate IDs
+    if (
+      !Types.ObjectId.isValid(conversationId) ||
+      !Types.ObjectId.isValid(userId)
+    ) {
+      throw new AppError(400, 'Invalid ID provided');
+    }
+
+    // Start a MongoDB session
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      // Find conversation
+      const conversation =
+        await Conversation.findById(conversationId).session(session);
+      if (!conversation) {
+        throw new AppError(404, 'Conversation not found');
+      }
+
+      // Check if user is a participant
+      const isParticipant = conversation.participants.some((id) =>
+        id.equals(userId),
+      );
+      if (!isParticipant) {
+        throw new AppError(
+          403,
+          'You are not a participant of this conversation',
+        );
+      }
+
+      // Soft delete the conversation
+      conversation.isDeleted = true;
+      await conversation.save({ session });
+
+      // Soft delete all messages in the conversation
+      await Message.updateMany(
+        { conversation: conversation._id },
+        { $set: { isDeleted: true } },
+        { session },
+      );
+
+      // Commit transaction
+      await session.commitTransaction();
+      session.endSession();
+
+      return conversation;
+    } catch (error) {
+      // Abort transaction on error
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
+    }
+  },
 };
+
