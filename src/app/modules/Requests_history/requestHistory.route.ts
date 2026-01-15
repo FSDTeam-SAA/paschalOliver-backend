@@ -25,7 +25,7 @@ router.get(
 
 // Accept a request
 router.patch(
-  '/:id/accept',
+  '/accept/:id',
   auth(userRole.professional),
   validateRequest(RequestHistoryValidation.acceptRequestValidation),
   RequestHistoryControllers.acceptRequest,
@@ -33,7 +33,7 @@ router.patch(
 
 // Reject a request
 router.patch(
-  '/:id/reject',
+  '/reject/:id',
   auth(userRole.professional),
   validateRequest(RequestHistoryValidation.rejectRequestValidation),
   RequestHistoryControllers.rejectRequest,
