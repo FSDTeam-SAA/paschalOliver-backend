@@ -16,19 +16,18 @@ router.post(
   fileUploader.upload.array('gallery'),
   ListingControllers.addToGallery,
 );
-
 router.get(
   '/gallery',
   auth(userRole.professional),
   ListingControllers.getGallery,
 );
-
 router.delete(
   '/gallery',
   auth(userRole.professional),
   ListingControllers.removeFromGallery,
 );
 
+// listing routes
 router.post(
   '/',
   auth(userRole.professional),
