@@ -3,12 +3,14 @@ import express from 'express';
 import auth from '../../middlewares/auth';
 import { userRole } from '../user/user.constant';
 import { getMessagesController, sendMessageController,markMessageAsReadController,deleteMessageController } from './message.controller';
+import { fileUploader } from '../../helper/fileUploder';
 
 const router = express.Router();
 
 router.post(
   '/send-message',
   auth(userRole.professional, userRole.client),
+  fileUploader.upload.single('image'),
   sendMessageController,
 );
 
