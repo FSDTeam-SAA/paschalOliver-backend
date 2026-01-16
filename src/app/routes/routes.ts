@@ -10,6 +10,9 @@ import { ProfessionalRoutes } from '../modules/professional/professional.route';
 // import { RequestHistoryRoutes } from '../modules/Requests_history/requestHistory.route';
 import { ServiceRoutes } from '../modules/services/service.route';
 import { ListingRoutes } from '../modules/listing/listing.route';
+import { ConversationRoutes } from '../modules/conversation/conversation.route';
+import { MessageRoutes } from '../modules/message/message.route';
+import { RequestHistoryRoutes } from '../modules/Requests_history/requestHistory.route';
 
 const router = Router();
 
@@ -46,10 +49,10 @@ const moduleRoutes = [
     path: '/professional',
     route: ProfessionalRoutes,
   },
-  // {
-  //   path: '/request-history',
-  //   route: RequestHistoryRoutes,
-  // },
+  {
+    path: '/request-history',
+    route: RequestHistoryRoutes,
+  },
   {
     path: '/services',
     route: ServiceRoutes,
@@ -57,6 +60,14 @@ const moduleRoutes = [
   {
     path: '/listing',
     route: ListingRoutes,
+  },
+  {
+    path: '/conversations',
+    route: ConversationRoutes,
+  },
+  {
+    path: '/messages',
+    route: MessageRoutes,
   },
 ];
 

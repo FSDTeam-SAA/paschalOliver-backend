@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
-import app from './app';
+// import app from './app';
 import config from './app/config';
+import { server } from './app';
 
 const PORT = config.port;
 
@@ -13,7 +14,7 @@ const main = async () => {
     const mongo = await mongoose.connect(config.mongoUri);
     console.log(`✅ MongoDB connected: ${mongo.connection.host}`);
 
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   } catch (error: any) {
