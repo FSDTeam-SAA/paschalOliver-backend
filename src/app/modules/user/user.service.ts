@@ -1,4 +1,5 @@
 import AppError from '../../error/appError';
+import { deleteFromCloudinary } from '../../helper/deleteImage';
 import { fileUploader } from '../../helper/fileUploder';
 import pagination, { IOption } from '../../helper/pagenation';
 import { IUser } from './user.interface';
@@ -10,11 +11,18 @@ const getUserProfile = async (userId: string) => {
 };
 
 const updatePersonalDetails = async (id: string, payload: Partial<IUser>) => {
+  if (payload.image) {
+    const currentUser = await User.findById(id);
+
+    if (currentUser?.image) {
+      await deleteFromCloudinary(currentUser.image);
+    }
+  }
+
   const result = await User.findByIdAndUpdate(id, payload, {
     new: true,
     runValidators: true,
   });
-
   return result;
 };
 
