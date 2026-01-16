@@ -2,13 +2,15 @@ import AppError from '../../error/appError';
 import { Message } from './message.model';
 import Conversation from '../conversation/conversation.model';
 import { Types } from 'mongoose';
+import { fileUploader } from '../../helper/fileUploder';
 
 const sendMessage = async (
   senderId: string,
   conversationId: string,
   receiverId: string,
-  content: string,
+  content?: string,
   attachments?: string[],
+  image?: Express.Multer.File,
 ) => {
   // Find conversation
   const conversation = await Conversation.findById(conversationId);
@@ -30,6 +32,17 @@ const sendMessage = async (
     attachments: attachments || [],
     isRead: false,
   });
+
+  //upload to cloudinary
+  const messageImage = await fileUploader.uploadToCloudinary(
+    image as Express.Multer.File,
+  );
+  if (image)
+    createdMessage.image = {
+      url: messageImage.url,
+      public_id: messageImage.public_id,
+    };
+  await createdMessage.save();
 
   const message = await Message.findById(createdMessage._id)
     .populate('sender', 'name email image')

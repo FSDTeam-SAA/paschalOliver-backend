@@ -5,6 +5,10 @@ export interface IMessage {
   sender: Types.ObjectId;
   receiver: Types.ObjectId;
   content: string;
+  image?: {
+    url: string;
+    public_id: string;
+  };
   attachments?: string[];
   isDeleted: boolean;
   isRead: boolean;

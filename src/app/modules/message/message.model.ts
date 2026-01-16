@@ -20,7 +20,14 @@ const messageSchema = new Schema<IMessage>(
       required: true,
     },
     isDeleted: { type: Boolean, default: false },
-    content: { type: String, required: true },
+    content: { type: String, required: false },
+    image: {
+      url: {
+        type: String,
+        required: false,
+      },
+      public_id: { type: String, required: false },
+    },
     attachments: { type: [String], required: false },
     isRead: { type: Boolean, default: false },
   },

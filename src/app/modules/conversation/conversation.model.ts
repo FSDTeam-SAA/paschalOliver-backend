@@ -30,7 +30,7 @@ const conversationSchema = new Schema<IConversation>(
     ],
 
     mutedBy: [{ type: Types.ObjectId, ref: 'User', default: [] }],
-
+    
     isArchived: {
       type: Boolean,
       default: false,

@@ -6,6 +6,8 @@ import { MessageServices } from './message.service';
 // Send a message
 export const sendMessageController = catchAsync(async (req, res) => {
   const senderId = req.user.id;
+  const image = req.file;
+
   const { conversationId, receiverId, content, attachments } = req.body;
 
   //  Save message in DB
@@ -15,6 +17,7 @@ export const sendMessageController = catchAsync(async (req, res) => {
     receiverId,
     content,
     attachments,
+    image,
   );
 
   if (!message) {
@@ -58,8 +61,11 @@ export const sendMessageController = catchAsync(async (req, res) => {
 // Get all messages in a conversation
 export const getMessagesController = catchAsync(async (req, res) => {
   const { conversationId } = req.params;
-const userId = req.user.id;
-  const messages = await MessageServices.getMessages(conversationId as string, userId as string);
+  const userId = req.user.id;
+  const messages = await MessageServices.getMessages(
+    conversationId as string,
+    userId as string,
+  );
 
   sendResponse(res, {
     statusCode: 200,
@@ -73,7 +79,10 @@ const userId = req.user.id;
 export const markMessageAsReadController = catchAsync(async (req, res) => {
   const { messageId } = req.params;
 
-  const message = await MessageServices.markMessageAsRead(messageId as string , req.user.id);
+  const message = await MessageServices.markMessageAsRead(
+    messageId as string,
+    req.user.id,
+  );
 
   sendResponse(res, {
     statusCode: 200,
