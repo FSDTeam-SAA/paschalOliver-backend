@@ -9,6 +9,16 @@ const listingSchema = new Schema<IListing>(
       ref: 'Professional',
       required: true,
     },
+    // category: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'Category',
+    //   required: true,
+    // },
+    subcategory: {
+      type: Schema.Types.ObjectId,
+      ref: 'Subcategory',
+      required: true,
+    },
     service: {
       type: Schema.Types.ObjectId,
       ref: 'Service',

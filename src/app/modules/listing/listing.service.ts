@@ -2,17 +2,23 @@ import { Professional } from '../professional/professional.model';
 import { IListing } from './listing.interface';
 import { Listing } from './listing.model';
 import AppError from '../../error/appError';
+import { Service } from '../services/service.model';
 
 const createListing = async (userId: string, payload: IListing) => {
   const professional = await Professional.findOne({ user: userId });
-
-  console.log(professional);
   if (!professional) {
     throw new AppError(404, 'Professional profile not found');
   }
 
+  const serviceData = await Service.findById(payload.service);
+  if (!serviceData) {
+    throw new AppError(404, 'Service not found');
+  }
+
   payload.professional = professional._id;
-  const result = await Listing.create(payload);
+  payload.subcategory = serviceData.subCategoryId;
+  const listing = await Listing.create(payload);
+  const result = await listing.populate('subcategory', 'title');
   return result;
 };
 
@@ -23,7 +29,8 @@ const getMyListings = async (userId: string) => {
   }
 
   const result = await Listing.find({ professional: professional._id })
-    .populate('service', 'title image subCategoryId')
+    .populate('service', 'title image')
+    .populate('subcategory', 'title image')
     .sort({ createdAt: -1 });
 
   return result;
