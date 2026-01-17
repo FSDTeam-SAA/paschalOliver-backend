@@ -2,7 +2,7 @@ import { RequestHistory } from './requestHistory.model';
 import { Booking } from '../booking/booking.model';
 import { requestHistoryStatus } from './requestHistory.constant';
 
-import httpStatus from 'http-status-codes';
+// import httpStatus from 'http-status-codes';
 import AppError from '../../error/appError';
 import { Listing } from '../listing/listing.model';
 
@@ -88,7 +88,7 @@ const getRequestHistoryDetails = async (requestId: string) => {
     .lean();
 
   if (!request) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Request history not found');
+    throw new AppError(404, 'Request history not found');
   }
   console.log('piorg', request);
 
@@ -124,21 +124,18 @@ const acceptRequest = async (professionalId: string, requestId: string) => {
   const requestHistory = await RequestHistory.findById(requestId);
 
   if (!requestHistory) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Request history not found');
+    throw new AppError(404, 'Request history not found');
   }
 
   // Verify the request is assigned to this professional
   if (requestHistory.professional?.toString() !== professionalId) {
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      'You are not authorized to accept this request',
-    );
+    throw new AppError(403, 'You are not authorized to accept this request');
   }
 
   // Validate current status - can only accept if status is 'new'
   if (requestHistory.status !== 'new') {
     throw new AppError(
-      httpStatus.BAD_REQUEST,
+      400,
       `Cannot accept request with status: ${requestHistory.status}`,
     );
   }
@@ -185,22 +182,19 @@ const rejectRequest = async (professionalId: string, requestId: string) => {
   const requestHistory = await RequestHistory.findById(requestId);
 
   if (!requestHistory) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Request history not found');
+    throw new AppError(404, 'Request history not found');
   }
 
   // Verify the request is assigned to this professional
   if (requestHistory.professional?.toString() !== professionalId) {
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      'You are not authorized to reject this request',
-    );
+    throw new AppError(403, 'You are not authorized to reject this request');
   }
 
   // Validate current status - can only reject if status is 'new'
   // Cannot reject after accepting
   if (requestHistory.status !== 'new') {
     throw new AppError(
-      httpStatus.BAD_REQUEST,
+      400,
       `Cannot reject request with status: ${requestHistory.status}. Professional cannot reject after accepting.`,
     );
   }

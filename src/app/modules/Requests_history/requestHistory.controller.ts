@@ -2,7 +2,7 @@ import { RequestHandler } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 
-import httpStatus from 'http-status-codes';
+// import httpStatus from 'http-status-codes';
 
 import { IrequestQuery } from './requestHistory.interface';
 import { RequestHistoryServices } from './requestHistory.service';
@@ -22,7 +22,7 @@ const getRequestHistory: RequestHandler = catchAsync(async (req, res) => {
   );
 
   sendResponse(res, {
-    statusCode: httpStatus.OK,
+    statusCode: 200,
     success: true,
     message: 'Request history retrieved successfully',
     data: result,
@@ -39,7 +39,7 @@ const getRequestHistoryDetails: RequestHandler = catchAsync(
     );
 
     sendResponse(res, {
-      statusCode: httpStatus.OK,
+      statusCode: 200,
       success: true,
       message: 'Request history details retrieved successfully',
       data: result,
@@ -58,7 +58,7 @@ const acceptRequest: RequestHandler = catchAsync(async (req, res) => {
   );
 
   sendResponse(res, {
-    statusCode: httpStatus.OK,
+    statusCode: 200,
     success: true,
     message: 'Request accepted successfully',
     data: result,
@@ -76,7 +76,7 @@ const rejectRequest: RequestHandler = catchAsync(async (req, res) => {
   );
 
   sendResponse(res, {
-    statusCode: httpStatus.OK,
+    statusCode: 200,
     success: true,
     message: 'Request rejected successfully',
     data: result,

@@ -52,7 +52,24 @@ const getProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getSingleProfessional = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await ProfessionalServices.getProfessionalDetails(
+      id as string,
+    );
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Professional details retrieved successfully',
+      data: result,
+    });
+  },
+);
+
 export const ProfessionalControllers = {
   updateProfile,
   getProfile,
+  getSingleProfessional,
 };

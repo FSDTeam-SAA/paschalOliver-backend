@@ -2,7 +2,7 @@ import AppError from '../../error/appError';
 import { RequestHistory } from '../Requests_history/requestHistory.model';
 import { IBooking } from './booking.interface';
 import { Booking } from './booking.model';
-import httpStatus from 'http-status-codes';
+// import httpStatus from 'http-status-codes';
 
 const createBooking = async (userId: string, payload: IBooking) => {
   const result = await Booking.create({
@@ -25,7 +25,7 @@ const cancelBooking = async (userId: string, bookingId: string) => {
   const booking = await Booking.findOne({ _id: bookingId, customer: userId });
 
   if (!booking) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Booking not found');
+    throw new AppError(404, 'Booking not found');
   }
 
   booking.status = 'cancelled_by_client';

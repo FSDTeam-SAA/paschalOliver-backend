@@ -1,7 +1,4 @@
-import AppError from '../../error/appError';
 import { deleteFromCloudinary } from '../../helper/deleteImage';
-import { fileUploader } from '../../helper/fileUploder';
-import pagination, { IOption } from '../../helper/pagenation';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 
@@ -40,6 +37,14 @@ export const UserServices = {
   updatePersonalDetails,
   updateUserLanguage,
 };
+
+// const getUserById = async (id: string) => {
+//   const result = await User.findById(id);
+//   if (!result) {
+//     throw new AppError(404, 'User not found');
+//   }
+//   return result;
+// };
 
 // const getAllUser = async (params: any, options: IOption) => {
 //   const { page, limit, skip, sortBy, sortOrder } = pagination(options);
@@ -85,14 +90,6 @@ export const UserServices = {
 //       limit,
 //     },
 //   };
-// };
-
-// const getUserById = async (id: string) => {
-//   const result = await User.findById(id);
-//   if (!result) {
-//     throw new AppError(404, 'User not found');
-//   }
-//   return result;
 // };
 
 // const updateUserById = async (
