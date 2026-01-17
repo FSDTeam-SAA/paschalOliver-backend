@@ -130,8 +130,7 @@ export const ConversationServices = {
     return updatedConversation;
   },
   async getUserConversations(userId: string) {
-    console.log(userId);
-    
+
     return Conversation.find({
       participants: userId,
     })
@@ -196,4 +195,3 @@ export const ConversationServices = {
     }
   },
 };
-
