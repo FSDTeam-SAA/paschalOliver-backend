@@ -97,13 +97,33 @@ export const deleteMessageController = catchAsync(async (req, res) => {
   const { messageId } = req.params;
 
   const deletedMessage = await MessageServices.deleteMessage(
+    messageId as string,req.user.id
+  );
+
+  if (!deletedMessage) {
+    throw new Error('Failed to delete message');
+  }
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Message deleted successfully',
+    data: deletedMessage,
+  });
+});
+
+//hard delete a message
+export const hardDeleteMessageController = catchAsync(async (req, res) => {
+  const { messageId } = req.params;
+
+  const deletedMessage = await MessageServices.hardDeleteMessage(
     messageId as string,
   );
 
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: 'Message deleted successfully',
+    message: 'Message permanently deleted successfully',
     data: deletedMessage,
   });
 });

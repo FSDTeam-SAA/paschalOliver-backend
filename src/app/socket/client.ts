@@ -19,7 +19,7 @@ interface MessagePayload {
 }
 
 const SERVER_URL = 'http://localhost:5000';
-const USER_ID = '6967b0405f4b11f33de85641';
+const USER_ID = '69681692017d4e4a38bbd982';
 // const CHAT_ID = 'chat123';
 
 const socket: Socket = socketIoClient(SERVER_URL, {
@@ -39,6 +39,11 @@ socket.on('stopTyping', ({ userId }) =>
 // Listen for new messages
 socket.on('newMessage', (data: MessagePayload) => {
   console.log(`📩 New message from ${data.sender.name}: ${data.content}`);
+});
+
+//delete message
+socket.on('deleteMessage', (data: MessagePayload) => {
+  console.log(`🗑️ Message deleted by ${data?.sender?.name}: ${data?.content}`);
 });
 
 socket.on('disconnect', () => console.log('❌ Disconnected from server'));
