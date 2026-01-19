@@ -97,11 +97,16 @@ export const createComment = async (
 };
 
 const getAllComments = async (serviceId: string) => {
-  console.log(serviceId);
-
-  return await Comment.find({ serviceId, isDeleted: false })
+  const comments = await Comment.find({ serviceId, isDeleted: false })
     .populate('userId', 'name email')
+    .populate('serviceId', 'title serviceType')
+    .populate('bookingId', 'status durationInMinutes scheduleType')
     .sort({ createdAt: -1 });
+
+  if (comments.length === 0) {
+    throw new AppError(404, 'No comments found for this service');
+  }
+  return comments;
 };
 
 const getCommentsByUser = async (userId: string) => {
