@@ -42,7 +42,7 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
 
 const getProfile = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
-  const result = await ProfessionalServices.getProfessionalProfile(userId);
+  const result = await ProfessionalServices.getProfile(userId);
 
   sendResponse(res, {
     statusCode: 200,
@@ -55,7 +55,7 @@ const getProfile = catchAsync(async (req: Request, res: Response) => {
 const getSingleProfessional = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await ProfessionalServices.getProfessionalDetails(
+    const result = await ProfessionalServices.getSingleProfessional(
       id as string,
     );
 
@@ -68,8 +68,26 @@ const getSingleProfessional = catchAsync(
   },
 );
 
+const searchBySubcategory = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user;
+  const { subcategoryId } = req.params;
+
+  const result = await ProfessionalServices.searchBySubcategory(
+    subcategoryId as string,
+    id,
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Professionals retrieved successfully',
+    data: result,
+  });
+});
+
 export const ProfessionalControllers = {
   updateProfile,
   getProfile,
   getSingleProfessional,
+  searchBySubcategory,
 };

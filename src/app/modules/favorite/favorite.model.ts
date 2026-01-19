@@ -13,6 +13,11 @@ const favoriteSchema = new Schema<IFavorite>(
       ref: 'Professional',
       required: true,
     },
+    subcategory: {
+      type: Schema.Types.ObjectId,
+      ref: 'Subcategory',
+      required: true,
+    },
   },
   {
     timestamps: true,

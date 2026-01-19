@@ -2,6 +2,8 @@ import { Professional } from './professional.model';
 import { IProfessional } from './professional.interface';
 import AppError from '../../error/appError';
 import { Listing } from '../listing/listing.model';
+import { Address } from '../address/address.model';
+import { id } from 'zod/v4/locales/index.cjs';
 
 const updateProfessionalProfile = async (
   userId: string,
@@ -19,12 +21,12 @@ const updateProfessionalProfile = async (
   return result;
 };
 
-const getProfessionalProfile = async (userId: string) => {
+const getProfile = async (userId: string) => {
   const result = await Professional.findOne({ user: userId }).populate('user');
   return result;
 };
 
-const getProfessionalDetails = async (id: string) => {
+const getSingleProfessional = async (id: string) => {
   const professional = await Professional.findById(id)
     .populate('user', 'name image about')
     .select('gallery profileDetails user');
@@ -44,8 +46,34 @@ const getProfessionalDetails = async (id: string) => {
   };
 };
 
+const searchBySubcategory = async (subcategoryId: string, userId: string) => {
+  const userAddress = await Address.findOne({ user: userId, isDefault: true });
+  const userArea = userAddress?.area;
+
+  const professionalIds = await Listing.find({
+    subcategory: subcategoryId,
+    isActive: true,
+  }).distinct('professional');
+
+  const query: any = {
+    _id: { $in: professionalIds }, // Must be in the list we just found
+    isVerified: true, // Optional: Only show verified pros
+  };
+
+  if (userArea) {
+    query.workingAreas = userArea;
+  }
+
+  const result = await Professional.find(query).select('gallery').populate({
+    path: 'user',
+    select: 'name image',
+  });
+  return result;
+};
+
 export const ProfessionalServices = {
   updateProfessionalProfile,
-  getProfessionalProfile,
-  getProfessionalDetails,
+  getProfile,
+  getSingleProfessional,
+  searchBySubcategory,
 };

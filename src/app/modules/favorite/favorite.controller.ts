@@ -5,9 +5,13 @@ import { FavoriteServices } from './favorite.service';
 
 const toggleFavorite = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.user;
-  const { professionalId } = req.body;
+  const { professionalId, subcategoryId } = req.body;
 
-  const result = await FavoriteServices.toggleFavorite(id, professionalId);
+  const result = await FavoriteServices.toggleFavorite(
+    id,
+    professionalId,
+    subcategoryId,
+  );
 
   sendResponse(res, {
     statusCode: 200,

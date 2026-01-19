@@ -12,6 +12,10 @@ const addressSchema = new Schema<IAddress>(
       type: String,
       required: true,
     },
+    area: {
+      type: String,
+      required: true,
+    },
     streetNumber: {
       type: String,
     },
