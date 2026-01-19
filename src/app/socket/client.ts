@@ -38,7 +38,7 @@ socket.on('stopTyping', ({ userId }) =>
 
 // Listen for new messages
 socket.on('newMessage', (data: MessagePayload) => {
-  console.log(`📩 New message from ${data.sender.name}: ${data.content}`);
+  console.log(`📩 New message from ${data?.sender?.name || "Sender"}: ${data?.content}`);
 });
 
 //delete message
@@ -47,3 +47,4 @@ socket.on('deleteMessage', (data: MessagePayload) => {
 });
 
 socket.on('disconnect', () => console.log('❌ Disconnected from server'));
+
