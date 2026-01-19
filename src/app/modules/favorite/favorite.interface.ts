@@ -3,4 +3,5 @@ import { Types } from 'mongoose';
 export interface IFavorite {
   user: Types.ObjectId;
   professional: Types.ObjectId;
+  subcategory: Types.ObjectId;
 }

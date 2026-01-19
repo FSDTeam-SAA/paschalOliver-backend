@@ -14,6 +14,11 @@ router.get(
   ProfessionalControllers.getProfile,
 );
 router.get(
+  '/search/:subcategoryId',
+  auth(userRole.client),
+  ProfessionalControllers.searchBySubcategory,
+);
+router.get(
   '/:id',
   auth(userRole.client),
   ProfessionalControllers.getSingleProfessional,
