@@ -32,8 +32,8 @@ const professionalSchema = new Schema<IProfessional>(
       dateOfBirth: { type: String, default: '' },
       countryOfBirth: { type: String, default: '' },
       cityOfBirth: { type: String, default: '' },
-      comments: [{ type: Schema.Types.ObjectId, ref: 'Comment', default: null }],
     },
+    comments: [{ type: Schema.Types.ObjectId, ref: 'Comment', default: null }],
 
     identity: {
       documentType: {

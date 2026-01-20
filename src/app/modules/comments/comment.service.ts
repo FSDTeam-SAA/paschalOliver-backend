@@ -73,7 +73,7 @@ export const createComment = async (
     );
 
     // Push comment ID to professional (type-safe)
-    professional.personalDetails.comments.push((comment as any)._id);
+    professional.comments.push((comment as any)._id);
     await professional.save({ session });
 
     // Update professional average rating
