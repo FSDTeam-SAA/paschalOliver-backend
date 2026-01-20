@@ -33,4 +33,12 @@ router.delete(
   CommentControllers.deleteComment,
 );
 
+
+//sensitive comment get only for admin
+router.get(
+  '/get-sensitive-comments/:serviceId',
+  auth(userRole.admin),
+  CommentControllers.getSensitiveComments,
+);
+
 export const CommentRoutes = router;

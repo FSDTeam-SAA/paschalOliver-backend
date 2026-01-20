@@ -90,9 +90,22 @@ const deleteComment = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+//getSensitiveComments
+const getSensitiveComments = catchAsync(async (req: Request, res: Response) => {
+  const { serviceId } = req.params;
+  const result = await CommentServices.getSensitiveComments(serviceId as string);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Sensitive comments retrieved successfully',
+    data: result,
+  });
+})
+
 export const CommentControllers = {
   createComment,
   getAllComments,
   getMyComments,
   deleteComment,
+  getSensitiveComments,
 };
