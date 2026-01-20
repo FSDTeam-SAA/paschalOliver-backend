@@ -7,7 +7,6 @@ export interface IPersonalDetails {
   dateOfBirth: string;
   countryOfBirth: string;
   cityOfBirth: string;
-  comments: Types.ObjectId[];
 }
 
 export interface IIdentity {
@@ -55,6 +54,7 @@ export interface IProfessional {
   user: Types.ObjectId;
 
   personalDetails: IPersonalDetails;
+  comments: Types.ObjectId[];
   identity: IIdentity;
   address: IAddress;
   workSchedule: IDaySchedule[];

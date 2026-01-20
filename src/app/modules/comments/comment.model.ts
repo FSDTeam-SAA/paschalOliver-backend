@@ -75,8 +75,6 @@ commentSchema.pre<ICommentDocument>('save', function (next) {
   next();
 });
 
-// --- Unique index: one comment per booking ---
-commentSchema.index({ bookingId: 1 }, { unique: true });
 
 // --- Export Model ---
 export const Comment: Model<ICommentDocument> =

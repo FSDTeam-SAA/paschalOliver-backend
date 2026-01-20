@@ -15,7 +15,7 @@ interface ICreateCommentBody {
   bookingId: string; // Must be sent by client
 }
 
-// Create Comment 
+// Create Comment
 const createComment = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
   const { professionalId } = req.params;
@@ -46,7 +46,7 @@ const createComment = catchAsync(async (req: Request, res: Response) => {
 
 // Get All Comments for indivual Service
 const getAllComments = catchAsync(async (req: Request, res: Response) => {
-  const {serviceId} = req.params;
+  const { serviceId } = req.params;
   if (!serviceId)
     throw new AppError(400, 'Service ID is required to get comments');
   const result = await CommentServices.getAllComments(serviceId);
@@ -64,6 +64,8 @@ const getMyComments = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
 
   const result = await CommentServices.getCommentsByUser(userId);
+  if (result && result.length === 0)
+    throw new AppError(400, 'No comments found or you not commented yet');
 
   sendResponse(res, {
     statusCode: 200,
