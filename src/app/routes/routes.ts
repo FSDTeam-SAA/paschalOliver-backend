@@ -14,6 +14,7 @@ import { MessageRoutes } from '../modules/message/message.route';
 import { RequestHistoryRoutes } from '../modules/Requests_history/requestHistory.route';
 import { FavoriteRoutes } from '../modules/favorite/favorite.route';
 import { CommentRoutes } from '../modules/comments/comment.route';
+import { PaymentRoutes } from '../modules/payment/payment.route';
 
 const router = Router();
 
@@ -77,6 +78,10 @@ const moduleRoutes = [
   {
     path: '/comment',
     route: CommentRoutes,
+  },
+  {
+    path: '/payment',
+    route: PaymentRoutes,
   },
 ];
 
