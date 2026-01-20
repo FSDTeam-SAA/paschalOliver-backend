@@ -162,10 +162,19 @@ const deleteComment = async (commentId: string, userId: string) => {
     throw error;
   }
 };
+const getSensitiveComments = async (serviceId: string) => {
+  return await Comment.find({ serviceId })
+    .sort({ isDeleted: 1 })
+    .populate('userId', 'name email')
+    .populate('serviceId', 'title serviceType')
+    .populate('bookingId', 'status durationInMinutes scheduleType')
+    .sort({ createdAt: -1 });
+};
 
 export const CommentServices: any = {
   createComment,
   getAllComments,
   getCommentsByUser,
   deleteComment,
+  getSensitiveComments,
 };
