@@ -18,7 +18,7 @@ interface MessagePayload {
 }
 
 const SERVER_URL = 'http://localhost:5000';
-const USER_ID = '69710ec73ed8016c2fc651ef';
+const USER_ID = '69712a9eae8f4de786b17732';
 // const CHAT_ID = 'chat123';
 
 const socket: Socket = socketIoClient(SERVER_URL, {
@@ -34,6 +34,13 @@ socket.on('typing', ({ userId }) => console.log(`👀 ${userId} is typing...`));
 socket.on('stopTyping', ({ userId }) =>
   console.log(`✋ ${userId} stopped typing`),
 );
+
+//new booking
+socket.on('newBooking', (data) => {
+  const message = `Congratulations! ${data.customer.name} booked your service "${data.service.title}"`;
+  // console.log('New Booking:', data);
+  console.log(message);
+});
 
 // Listen for new messages
 socket.on('newMessage', (data: MessagePayload) => {

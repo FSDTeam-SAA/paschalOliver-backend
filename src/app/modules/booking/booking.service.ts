@@ -4,6 +4,7 @@ import { Listing } from '../listing/listing.model';
 import { RequestHistory } from '../Requests_history/requestHistory.model';
 import { IBooking } from './booking.interface';
 import { Booking } from './booking.model';
+import { getIo } from '../../socket/server';
 // import httpStatus from 'http-status-codes';
 
 const createBooking = async (userId: string, payload: IBooking) => {
@@ -31,11 +32,28 @@ const createBooking = async (userId: string, payload: IBooking) => {
     amount = amount - discountAmount;
   }
 
-  const result = await Booking.create({
+  const result: any = await Booking.create({
     ...payload,
     customer: userId,
     amount: Math.round(amount), // optional: round for clean number
   });
+  if (!result) {
+    throw new AppError(404, 'Booking not found');
+  }
+
+  // populate sender (customer) & service
+  const populatedBooking = await Booking.findById(result._id)
+    .populate({
+      path: 'customer',
+      select: 'name email avatar', // sender info
+    })
+    .populate({
+      path: 'service',
+      select: 'title type', // service info
+    });
+
+  //send notification in realtime
+  getIo().to(result.professional.toString()).emit('newBooking', populatedBooking);
 
   return result;
 };
@@ -65,6 +83,12 @@ const cancelBooking = async (userId: string, bookingId: string) => {
     await requestHistory.save();
   }
 
+
+  
+
+  //send notification in realtime
+  // getIo().to(to).emit('bookingCancelled', booking); 
+//! Need to implement this for realtime notification
   return booking;
 };
 
