@@ -99,12 +99,11 @@ const getRequestHistoryDetails = async (requestId: string) => {
   });
   const booking = request.booking as any;
   const hourlyRate = listing?.price;
-  // console.log('liorwe', listing);
-  // console.log('MMMMM', booking.durationInMinutes);
+
   const paymentAmount = Number(
     ((booking.durationInMinutes / 60) * hourlyRate!).toFixed(2),
   );
-  // console.log('weth3roitjhoriwejhgoriegiorehjgi', paymentAmount);
+
   const paymentDetails = {
     amount: paymentAmount,
     currency: 'USD',

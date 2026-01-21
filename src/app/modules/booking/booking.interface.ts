@@ -16,6 +16,7 @@ export interface IBooking {
   address: Types.ObjectId;
   scheduleType: TScheduleType;
   date: Date;
+  amount: number;
   startTime: string;
   durationInMinutes: number;
   status: TBookingStatus;

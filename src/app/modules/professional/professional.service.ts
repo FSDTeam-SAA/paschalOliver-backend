@@ -3,7 +3,6 @@ import { IProfessional } from './professional.interface';
 import AppError from '../../error/appError';
 import { Listing } from '../listing/listing.model';
 import { Address } from '../address/address.model';
-import { id } from 'zod/v4/locales/index.cjs';
 
 const updateProfessionalProfile = async (
   userId: string,
