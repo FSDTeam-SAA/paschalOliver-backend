@@ -49,11 +49,11 @@ const getRequestHistoryDetails: RequestHandler = catchAsync(
 
 // Accept a request
 const acceptRequest: RequestHandler = catchAsync(async (req, res) => {
-  const professionalId = req.user.id;
+  const userId = req.user.id;
   const { id } = req.params;
 
   const result = await RequestHistoryServices.acceptRequest(
-    professionalId,
+    userId,
     id as string,
   );
 
@@ -67,11 +67,11 @@ const acceptRequest: RequestHandler = catchAsync(async (req, res) => {
 
 // Reject a request
 const rejectRequest: RequestHandler = catchAsync(async (req, res) => {
-  const professionalId = req.user.id;
+  const userId = req.user.id;
   const { id } = req.params;
 
   const result = await RequestHistoryServices.rejectRequest(
-    professionalId,
+    userId,
     id as string,
   );
 
