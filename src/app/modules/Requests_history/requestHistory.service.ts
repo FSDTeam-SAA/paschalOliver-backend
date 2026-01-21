@@ -124,15 +124,20 @@ const getRequestHistoryDetails = async (requestId: string) => {
 };
 
 // Accept a request
-const acceptRequest = async (professionalId: string, requestId: string) => {
+const acceptRequest = async (userId: string, requestId: string) => {
   const requestHistory = await RequestHistory.findById(requestId);
-
+  const professional: any = await Professional.findOne({ user: userId });
+  if (!professional) {
+    throw new AppError(404, 'Professional not found');
+  }
   if (!requestHistory) {
     throw new AppError(404, 'Request history not found');
   }
 
   // Verify the request is assigned to this professional
-  if (requestHistory.professional?.toString() !== professionalId) {
+  if (
+    requestHistory.professional?.toString() !== professional._id?.toString()
+  ) {
     throw new AppError(403, 'You are not authorized to accept this request');
   }
 
@@ -182,15 +187,22 @@ const acceptRequest = async (professionalId: string, requestId: string) => {
 };
 
 // Reject a request
-const rejectRequest = async (professionalId: string, requestId: string) => {
+const rejectRequest = async (userId: string, requestId: string) => {
   const requestHistory = await RequestHistory.findById(requestId);
 
   if (!requestHistory) {
     throw new AppError(404, 'Request history not found');
   }
 
+  const professional: any = await Professional.findOne({ user: userId });
+  if (!professional) {
+    throw new AppError(404, 'Professional not found');
+  }
+
   // Verify the request is assigned to this professional
-  if (requestHistory.professional?.toString() !== professionalId) {
+  if (
+    requestHistory.professional?.toString() !== professional._id?.toString()
+  ) {
     throw new AppError(403, 'You are not authorized to reject this request');
   }
 
