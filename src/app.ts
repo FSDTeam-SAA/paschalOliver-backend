@@ -7,8 +7,15 @@ import router from './app/routes/routes';
 import morgan from 'morgan';
 import http from 'http';
 import { initSocket } from './app/socket/server';
+import { PaymentController } from './app/modules/payment/payment.controller';
 const app = express();
 const serverInstance = http.createServer(app);
+
+app.post(
+  '/api/v1/payment/webhook',
+  express.raw({ type: 'application/json' }),
+  PaymentController.handleStripeWebhook,
+);
 
 // Middlewares
 app.use(morgan('dev'));

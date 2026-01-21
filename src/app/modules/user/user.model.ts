@@ -55,6 +55,10 @@ const userSchema = new Schema<IUser>(
       type: Date,
       select: 0,
     },
+    stripeCustomerId: {
+      type: String,
+      select: false,
+    },
   },
   {
     timestamps: true,
