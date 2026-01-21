@@ -11,11 +11,11 @@ import { RequestHistoryServices } from './requestHistory.service';
 
 const getRequestHistory: RequestHandler = catchAsync(async (req, res) => {
   console.log('controller started');
-  const professionalId = req.user.id;
+  const userId = req.user.id;
   const { status, page, limit } = req.query as unknown as IrequestQuery;
 
   const result = await RequestHistoryServices.getRequestHistory(
-    professionalId,
+    userId,
     status,
     Number(page) || 1,
     Number(limit) || 10,

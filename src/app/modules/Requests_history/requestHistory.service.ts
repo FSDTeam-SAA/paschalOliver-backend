@@ -5,17 +5,22 @@ import { requestHistoryStatus } from './requestHistory.constant';
 // import httpStatus from 'http-status-codes';
 import AppError from '../../error/appError';
 import { Listing } from '../listing/listing.model';
+import { Professional } from '../professional/professional.model';
 
 // Get professional's request history with filtering and pagination
 const getRequestHistory = async (
-  professionalId: string,
+  userId: string,
   status?: string,
   page: number = 1,
   limit: number = 10,
 ) => {
   const skip = (page - 1) * limit;
+  const professional: any = await Professional.findOne({ user: userId });
+  if (!professional) {
+    throw new AppError(404, 'Professional not found');
+  }
 
-  const query: any = { professional: professionalId };
+  const query: any = { professional: professional._id };
 
   if (status) {
     if (status === 'cancelled') {
