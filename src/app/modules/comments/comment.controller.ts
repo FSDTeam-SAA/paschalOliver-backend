@@ -54,7 +54,7 @@ const getAllComments = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: 'Comments retrieved successfully',
+    message: 'Comments get successfully',
     data: result,
   });
 });
@@ -93,14 +93,16 @@ const deleteComment = catchAsync(async (req: Request, res: Response) => {
 //getSensitiveComments
 const getSensitiveComments = catchAsync(async (req: Request, res: Response) => {
   const { serviceId } = req.params;
-  const result = await CommentServices.getSensitiveComments(serviceId as string);
+  const result = await CommentServices.getSensitiveComments(
+    serviceId as string,
+  );
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: 'Sensitive comments retrieved successfully',
     data: result,
   });
-})
+});
 
 export const CommentControllers = {
   createComment,

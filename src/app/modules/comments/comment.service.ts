@@ -101,6 +101,11 @@ const getAllComments = async (serviceId: string) => {
     .populate('userId', 'name email')
     .populate('serviceId', 'title serviceType')
     .populate('bookingId', 'status durationInMinutes scheduleType')
+    .populate({
+      path: 'professionalId',
+      select:
+        'personalDetails.name personalDetails.gender personalDetails.countryOfBirth',
+    })
     .sort({ createdAt: -1 });
 
   if (comments.length === 0) {
@@ -108,6 +113,106 @@ const getAllComments = async (serviceId: string) => {
   }
   return comments;
 };
+
+// const getAllComments = async (serviceId: string) => {
+//   const comments = await Comment.aggregate([
+//     // Match service & non-deleted comments
+//     {
+//       $match: {
+//         serviceId: new mongoose.Types.ObjectId(serviceId),
+//         isDeleted: false,
+//       },
+//     },
+
+//     // User lookup
+//     {
+//       $lookup: {
+//         from: 'users',
+//         localField: 'userId',
+//         foreignField: '_id',
+//         as: 'user',
+//       },
+//     },
+//     { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+
+//     // Service lookup
+//     {
+//       $lookup: {
+//         from: 'services',
+//         localField: 'serviceId',
+//         foreignField: '_id',
+//         as: 'service',
+//       },
+//     },
+//     { $unwind: { path: '$service', preserveNullAndEmptyArrays: true } },
+
+//     // Booking lookup
+//     {
+//       $lookup: {
+//         from: 'bookings',
+//         localField: 'bookingId',
+//         foreignField: '_id',
+//         as: 'booking',
+//       },
+//     },
+//     { $unwind: { path: '$booking', preserveNullAndEmptyArrays: true } },
+
+//     // Professional lookup
+//     {
+//       $lookup: {
+//         from: 'professionals',
+//         localField: 'professionalId',
+//         foreignField: '_id',
+//         as: 'professional',
+//       },
+//     },
+//     { $unwind: { path: '$professional', preserveNullAndEmptyArrays: true } },
+
+//     // Shape final response (FLATTEN HERE)
+//     {
+//       $project: {
+//         comment: 1,
+//         rating: 1,
+//         createdAt: 1,
+
+//         user: {
+//           _id: '$user._id',
+//           name: '$user.name',
+//           email: '$user.email',
+//         },
+
+//         service: {
+//           _id: '$service._id',
+//           title: '$service.title',
+//           serviceType: '$service.serviceType',
+//         },
+
+//         booking: {
+//           _id: '$booking._id',
+//           status: '$booking.status',
+//           durationInMinutes: '$booking.durationInMinutes',
+//           scheduleType: '$booking.scheduleType',
+//         },
+
+//         professional: {
+//           _id: '$professional._id',
+//           name: '$professional.personalDetails.name',
+//           gender: '$professional.personalDetails.gender',
+//           country: '$professional.personalDetails.countryOfBirth',
+//         },
+//       },
+//     },
+//     {
+//       $sort: { createdAt: -1 },
+//     },
+//   ]);
+
+//   if (comments.length === 0) {
+//     throw new AppError(404, 'No comments found for this service');
+//   }
+
+//   return comments;
+// };
 
 const getCommentsByUser = async (userId: string) => {
   return await Comment.find({
