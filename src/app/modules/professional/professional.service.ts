@@ -3,7 +3,6 @@ import { IProfessional } from './professional.interface';
 import AppError from '../../error/appError';
 import { Listing } from '../listing/listing.model';
 import { Address } from '../address/address.model';
-import { id } from 'zod/v4/locales/index.cjs';
 
 const updateProfessionalProfile = async (
   userId: string,
@@ -26,10 +25,16 @@ const getProfile = async (userId: string) => {
   return result;
 };
 
+
 const getSingleProfessional = async (id: string) => {
   const professional = await Professional.findById(id)
     .populate('user', 'name image about')
-    .select('gallery profileDetails user');
+    .select('gallery profileDetails user')
+    .populate({
+      path: 'comments',
+      match: { isDeleted: false },
+      select: 'comment review',
+    });
 
   if (!professional) {
     throw new AppError(404, 'Professional not found');

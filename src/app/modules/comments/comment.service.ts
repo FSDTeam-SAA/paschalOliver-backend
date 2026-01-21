@@ -73,7 +73,7 @@ export const createComment = async (
     );
 
     // Push comment ID to professional (type-safe)
-    professional.personalDetails.comments.push((comment as any)._id);
+    professional.comments.push((comment as any)._id);
     await professional.save({ session });
 
     // Update professional average rating
@@ -97,11 +97,16 @@ export const createComment = async (
 };
 
 const getAllComments = async (serviceId: string) => {
-  console.log(serviceId);
-
-  return await Comment.find({ serviceId, isDeleted: false })
+  const comments = await Comment.find({ serviceId, isDeleted: false })
     .populate('userId', 'name email')
+    .populate('serviceId', 'title serviceType')
+    .populate('bookingId', 'status durationInMinutes scheduleType')
     .sort({ createdAt: -1 });
+
+  if (comments.length === 0) {
+    throw new AppError(404, 'No comments found for this service');
+  }
+  return comments;
 };
 
 const getCommentsByUser = async (userId: string) => {
@@ -157,10 +162,19 @@ const deleteComment = async (commentId: string, userId: string) => {
     throw error;
   }
 };
+const getSensitiveComments = async (serviceId: string) => {
+  return await Comment.find({ serviceId })
+    .sort({ isDeleted: 1 })
+    .populate('userId', 'name email')
+    .populate('serviceId', 'title serviceType')
+    .populate('bookingId', 'status durationInMinutes scheduleType')
+    .sort({ createdAt: -1 });
+};
 
 export const CommentServices: any = {
   createComment,
   getAllComments,
   getCommentsByUser,
   deleteComment,
+  getSensitiveComments,
 };
