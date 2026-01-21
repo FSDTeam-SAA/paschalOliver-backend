@@ -15,6 +15,7 @@ import { RequestHistoryRoutes } from '../modules/Requests_history/requestHistory
 import { FavoriteRoutes } from '../modules/favorite/favorite.route';
 import { CommentRoutes } from '../modules/comments/comment.route';
 import { AdminRoutes } from '../modules/admin/admin.route';
+import { PaymentRoutes } from '../modules/payment/payment.route';
 
 const router = Router();
 
@@ -82,6 +83,10 @@ const moduleRoutes = [
   {
     path: '/admin',
     route: AdminRoutes,
+  },
+  {
+    path: '/payment',
+    route: PaymentRoutes,
   },
 ];
 

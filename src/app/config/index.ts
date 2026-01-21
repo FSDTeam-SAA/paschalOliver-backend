@@ -36,6 +36,7 @@ export default {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   },
   frontendUrl: process.env.FRONTEND_URL,
+  backendUrl: process.env.BACKEND_URL,
   rateLimit: {
     window: process.env.RATE_LIMIT_WINDOW,
     max: process.env.RATE_LIMIT_MAX,

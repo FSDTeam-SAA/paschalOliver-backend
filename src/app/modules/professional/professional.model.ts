@@ -89,6 +89,9 @@ const professionalSchema = new Schema<IProfessional>(
       type: [String],
       default: [],
     },
+    stripeAccountId: {
+      type: String,
+    },
   },
   {
     timestamps: true,
