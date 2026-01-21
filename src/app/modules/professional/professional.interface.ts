@@ -58,7 +58,7 @@ export interface IProfessional {
   identity: IIdentity;
   address: IAddress;
   workSchedule: IDaySchedule[];
-
+  status: string;
   country: string;
   city: string;
   workingAreas: string[];

@@ -28,6 +28,10 @@ const bookingSchema = new Schema<IBooking>(
       enum: ['weekly', 'biweekly', 'just_once'],
       required: true,
     },
+    amount: {
+      type: Number,
+      required: true,
+    },
     date: {
       type: Date,
       required: true,
