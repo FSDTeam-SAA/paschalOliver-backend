@@ -3,6 +3,9 @@ import AppError from '../../error/appError';
 import { Professional } from '../professional/professional.model';
 import { Booking } from '../booking/booking.model';
 import mongoose from 'mongoose';
+import { NotificationService } from '../notification/notification.service';
+import { NOTIFICATION_TYPE } from '../notification/notification.constant';
+import { getIo } from '../../socket/server';
 
 interface ICreateCommentPayload {
   comment?: string;
@@ -26,7 +29,7 @@ export const createComment = async (
     session.startTransaction();
 
     // Verify booking exists and belongs to user
-    const booking = await Booking.findOne({
+    const booking: any = await Booking.findOne({
       _id: bookingId,
       customer: userId,
       status: 'completed',
@@ -84,6 +87,43 @@ export const createComment = async (
 
     professional.averageRating = ratingAggregation[0]?.avgRating || 0;
     await professional.save({ session });
+
+    //populate comment
+    const populatedComment: any = await Comment.findById((comment as any)._id)
+      .populate('userId', '_id name email')
+      .populate('serviceId', 'title serviceType')
+      .populate('professionalId', 'personalDetails user')
+      .populate('bookingId', 'status durationInMinutes scheduleType')
+      .session(session);
+
+    //sent notification when comment is added
+    await NotificationService.createNotification({
+      // Receiver (professional user)
+      reciverId: populatedComment.professionalId.user,
+      receiver: {
+        id: populatedComment.professionalId.user,
+        name: populatedComment.professionalId.personalDetails.name,
+      },
+
+      // Sender (customer)
+      senderId: populatedComment.userId._id,
+      sender: {
+        id: populatedComment.userId._id,
+        name: populatedComment.userId.name,
+      },
+
+      type: NOTIFICATION_TYPE.COMMENT_CREATED,
+      title: 'New Comment on Your Service',
+
+      message: `${populatedComment.userId.name} left a review on your "${populatedComment.serviceId.title}" service.`,
+
+      referenceId: populatedComment.serviceId._id,
+      referenceModel: 'Service',
+    });
+    //sent realtime notification via socket
+    getIo()
+      .to(populatedComment.professionalId.user.toString())
+      .emit('newComment', populatedComment);
 
     await session.commitTransaction();
     session.endSession();

@@ -18,7 +18,7 @@ interface MessagePayload {
 }
 
 const SERVER_URL = 'http://localhost:5000';
-const USER_ID = '69712a9eae8f4de786b17732';
+const USER_ID = '696e933456b77292177ba162';
 // const CHAT_ID = 'chat123';
 
 const socket: Socket = socketIoClient(SERVER_URL, {
@@ -47,6 +47,13 @@ socket.on('newMessage', (data: MessagePayload) => {
   console.log(
     `📩 New message from ${data?.sender?.name || 'Sender'}: ${data?.content}`,
   );
+});
+
+//new comment on review
+socket.on('newComment', (data) => {
+  // console.log('New Comment:', data);
+  const message = `You received a new review for "${data.serviceId.title}" from ${data.userId.name}.`;
+  console.log(message);
 });
 
 //delete message

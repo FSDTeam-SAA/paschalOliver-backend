@@ -13,12 +13,15 @@ import {
   createServiceSchema,
   updateServiceSchema,
 } from './service.validationSchema';
+import auth from '../../middlewares/auth';
+import { userRole } from '../user/user.constant';
 
 const router = express.Router();
 
 // Route: /api/v1/subcategories
 router.post(
   '/create-service',
+  auth(userRole.admin),
   upload.single('image'),
   validateRequest(createServiceSchema),
   createService,
@@ -28,9 +31,14 @@ router.get('/get-services/:subcategoryId', getServicesBySubcategory);
 router.get('/get-all-services', getAllServices);
 router.patch(
   '/update-service/:serviceId',
+  auth(userRole.admin),
   upload.single('image'),
   validateRequest(updateServiceSchema),
   updateService,
 );
-router.delete('/delete-service/:serviceId', deleteService);
+router.delete(
+  '/delete-service/:serviceId',
+  auth(userRole.admin),
+  deleteService,
+);
 export const ServiceRoutes = router;
