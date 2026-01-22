@@ -10,7 +10,7 @@ const bookingSchema = new Schema<IBooking>(
     },
     professional: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'Professional',
       required: true,
     },
     service: {

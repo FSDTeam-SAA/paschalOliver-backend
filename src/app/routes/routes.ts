@@ -16,6 +16,7 @@ import { FavoriteRoutes } from '../modules/favorite/favorite.route';
 import { CommentRoutes } from '../modules/comments/comment.route';
 import { AdminRoutes } from '../modules/admin/admin.route';
 import { PaymentRoutes } from '../modules/payment/payment.route';
+import { NotificationRoutes } from '../modules/notification/notification.route';
 
 const router = Router();
 
@@ -87,6 +88,10 @@ const moduleRoutes = [
   {
     path: '/payment',
     route: PaymentRoutes,
+  },
+  {
+    path: '/notification',
+    route: NotificationRoutes,
   },
 ];
 

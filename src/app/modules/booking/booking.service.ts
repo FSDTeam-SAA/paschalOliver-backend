@@ -1,61 +1,125 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import AppError from '../../error/appError';
 import { Listing } from '../listing/listing.model';
 import { RequestHistory } from '../Requests_history/requestHistory.model';
 import { IBooking } from './booking.interface';
 import { Booking } from './booking.model';
 import { getIo } from '../../socket/server';
+import { NotificationService } from '../notification/notification.service';
+import { NOTIFICATION_TYPE } from '../notification/notification.constant';
 // import httpStatus from 'http-status-codes';
 
+// Create booking
 const createBooking = async (userId: string, payload: IBooking) => {
-  const { service, professional, durationInMinutes } = payload;
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
 
-  const listing = await Listing.findOne({
-    service: new Types.ObjectId(service),
-    professional: new Types.ObjectId(professional),
-    isActive: true,
-  });
+    const { service, professional, durationInMinutes } = payload;
 
-  if (!listing) {
-    throw new AppError(
-      404,
-      'No active listing found for this service and professional',
+    // Find listing
+    const listing = await Listing.findOne({
+      service: new Types.ObjectId(service),
+      professional: new Types.ObjectId(professional),
+      isActive: true,
+    }).session(session);
+
+    if (!listing) {
+      throw new AppError(
+        404,
+        'No active listing found for this service and professional',
+      );
+    }
+
+    // Calculate amount
+    const durationInHours = durationInMinutes / 60;
+    let amount = listing.price * durationInHours;
+
+    if (listing.isDiscountOffered && listing.discountPercentage > 0) {
+      const discountAmount = (amount * listing.discountPercentage) / 100;
+      amount = amount - discountAmount;
+    }
+
+    // Create booking
+    const result: any = await Booking.create(
+      [
+        {
+          ...payload,
+          customer: userId,
+          amount: Math.round(amount),
+        },
+      ],
+      { session },
     );
-  }
 
-  const durationInHours = durationInMinutes / 60;
+    if (!result || !result[0]) {
+      throw new AppError(404, 'Booking not found');
+    }
 
-  let amount = listing.price * durationInHours;
+    const booking = result[0];
 
-  if (listing.isDiscountOffered && listing.discountPercentage > 0) {
-    const discountAmount = (amount * listing.discountPercentage) / 100;
-    amount = amount - discountAmount;
-  }
+    // Populate booking
+    const populatedBooking: any = await Booking.findById(booking._id)
+      .populate({
+        path: 'customer',
+        select: 'name email avatar',
+      })
+      .populate({
+        path: 'professional',
+        select: 'personalDetails user',
+      })
+      .populate({
+        path: 'service',
+        select: 'title type',
+      })
+      .session(session);
 
-  const result: any = await Booking.create({
-    ...payload,
-    customer: userId,
-    amount: Math.round(amount), // optional: round for clean number
-  });
-  if (!result) {
-    throw new AppError(404, 'Booking not found');
-  }
+    if (!populatedBooking) {
+      throw new AppError(404, 'Booking not found after creation');
+    }
 
-  // populate sender (customer) & service
-  const populatedBooking = await Booking.findById(result._id)
-    .populate({
-      path: 'customer',
-      select: 'name email avatar', // sender info
-    })
-    .populate({
-      path: 'service',
-      select: 'title type', // service info
+    // Save notification
+    await NotificationService.createNotification({
+      // receiver (professional)
+      reciverId: populatedBooking.professional.user,
+      receiver: {
+        id: populatedBooking.professional.user,
+        name: populatedBooking.professional.personalDetails.name,
+      },
+
+      // sender (customer)
+      senderId: populatedBooking.customer._id,
+      sender: {
+        id: populatedBooking.customer._id,
+        name: populatedBooking.customer.name,
+      },
+
+      type: NOTIFICATION_TYPE.BOOKING_ACCEPTED,
+      title: 'Booking Accepted',
+
+      message: `New booking received: ${populatedBooking.customer.name} booked your "${populatedBooking.service.title}" service on ${new Date(
+        populatedBooking.date,
+      ).toDateString()}.`,
+
+      referenceId: populatedBooking._id,
+      referenceModel: 'Booking',
     });
 
-  //send notification in realtime
-  getIo().to(result.professional.toString()).emit('newBooking', populatedBooking);
+    // Commit transaction
+    await session.commitTransaction();
+    session.endSession();
 
-  return result;
+    // Emit real-time notification
+    getIo()
+      .to(populatedBooking.professional.user.toString())
+      .emit('newBooking', populatedBooking);
+
+    return populatedBooking;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };
 
 const getAllBookings = async (userId: string) => {
@@ -83,12 +147,9 @@ const cancelBooking = async (userId: string, bookingId: string) => {
     await requestHistory.save();
   }
 
-
-  
-
   //send notification in realtime
-  // getIo().to(to).emit('bookingCancelled', booking); 
-//! Need to implement this for realtime notification
+  // getIo().to(to).emit('bookingCancelled', booking);
+  //! Need to implement this for realtime notification
   return booking;
 };
 
