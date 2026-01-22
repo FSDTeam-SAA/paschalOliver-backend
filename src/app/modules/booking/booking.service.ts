@@ -7,6 +7,7 @@ import { Booking } from './booking.model';
 import { getIo } from '../../socket/server';
 import { NotificationService } from '../notification/notification.service';
 import { NOTIFICATION_TYPE } from '../notification/notification.constant';
+import { User } from '../user/user.model';
 // import httpStatus from 'http-status-codes';
 
 // Create booking
@@ -76,6 +77,19 @@ const createBooking = async (userId: string, payload: IBooking) => {
 
     if (!populatedBooking) {
       throw new AppError(404, 'Booking not found after creation');
+    }
+
+    //chseck professional usert is active or not
+    if (populatedBooking.professional) {
+      const isActive = await User.findOne({
+        _id: populatedBooking.professional.user,
+        isBlocked: false,
+      });
+
+
+      if (!isActive) {
+        throw new AppError(404, 'Professional is not active now');
+      }
     }
 
     // Save notification
