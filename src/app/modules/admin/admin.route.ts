@@ -4,6 +4,7 @@ import { userRole } from '../user/user.constant';
 import {
   approveProfessionalController,
   blockUserController,
+  bookingManagementController,
   dashboardData,
   getAllProfessional,
   getAllUsers,
@@ -21,6 +22,12 @@ router.get(
   '/registration-request',
   auth(userRole.admin),
   getProfessionalRegistrationRequestsController,
+);
+
+router.get(
+  '/booking-management',
+  auth(userRole.admin),
+  bookingManagementController,
 );
 router.patch(
   '/professionals/approve/:professionalId',

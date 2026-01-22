@@ -3,6 +3,7 @@ import sendResponse from '../../utils/sendResponse';
 import {
   approveProfessionalService,
   blockUserService,
+  bookingManagementService,
   dasboardData,
   getAllProfessionalsService,
   getAllUsersService,
@@ -99,6 +100,16 @@ export const unBlockUserController = catchAsync(async (req, res) => {
     statusCode: 200,
     success: true,
     message: 'User activated successfully',
+    data: result,
+  });
+});
+
+export const bookingManagementController = catchAsync(async (req, res) => {
+  const result = await bookingManagementService();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Dashboard data retrieved successfully',
     data: result,
   });
 });

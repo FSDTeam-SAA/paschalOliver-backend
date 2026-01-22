@@ -4,6 +4,77 @@ import { Professional } from '../professional/professional.model';
 
 import { User } from '../user/user.model';
 
+export const bookingManagementService = async () => {
+  const getLatestBookingsService = await Booking.aggregate([
+    // latest booking
+    { $sort: { createdAt: -1 } },
+
+    // booking → professional
+    {
+      $lookup: {
+        from: 'professionals',
+        localField: 'professional',
+        foreignField: '_id',
+        as: 'professionalInfo',
+      },
+    },
+    { $unwind: '$professionalInfo' },
+
+    // professional → user
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'professionalInfo.user',
+        foreignField: '_id',
+        as: 'professionalUser',
+      },
+    },
+    { $unwind: '$professionalUser' },
+
+    // booking → customer(user)
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'customer',
+        foreignField: '_id',
+        as: 'clientInfo',
+      },
+    },
+    { $unwind: '$clientInfo' },
+
+    // service lookup
+    {
+      $lookup: {
+        from: 'services',
+        localField: 'service',
+        foreignField: '_id',
+        as: 'serviceInfo',
+      },
+    },
+    { $unwind: '$serviceInfo' },
+
+    // final shape
+    {
+      $project: {
+        _id: 0,
+
+        professionalName: '$professionalUser.name',
+        professionalPhone: '$professionalUser.phone',
+        professionalImage: '$professionalUser.image',
+
+        clientName: '$clientInfo.name',
+        clientPhone: '$clientInfo.phone',
+        clientImage: '$clientInfo.image',
+        service: '$serviceInfo.title',
+        date: 1,
+        amount: 1,
+        status: 1,
+      },
+    },
+  ]);
+
+  return getLatestBookingsService;
+};
 export const dasboardData = async () => {
   const totalUsers = await User.find({ role: 'client' }).countDocuments();
   const totalProfessionals = await User.find({
@@ -41,58 +112,17 @@ export const dasboardData = async () => {
       },
     },
   ]);
-  const getLatestBookingsService = await Booking.aggregate([
-    {
-      $sort: { createdAt: -1 },
-    },
-    {
-      $limit: 10,
-    },
+  const getBookings: object[] = await bookingManagementService();
+  // keep 10 data of the array
+  const latestBookings = getBookings.slice(0, 10);
 
-    {
-      $lookup: {
-        from: 'users',
-        localField: 'professional',
-        foreignField: '_id',
-        as: 'providerInfo',
-      },
-    },
-    {
-      $unwind: '$providerInfo',
-    },
-
-    {
-      $lookup: {
-        from: 'users',
-        localField: 'customer',
-        foreignField: '_id',
-        as: 'clientInfo',
-      },
-    },
-    {
-      $unwind: '$clientInfo',
-    },
-
-    {
-      $project: {
-        _id: 0,
-        providerName: '$providerInfo.name',
-        providerPhone: '$providerInfo.phone',
-        clientName: '$clientInfo.name',
-        clientPhone: '$clientInfo.phone',
-        date: '$date',
-        amount: '$amount',
-        status: '$status',
-      },
-    },
-  ]);
-  // console.log(getLatestBookingsService);
+  console.log(getBookings);
   return {
     totalUsers: totalUsers,
     totalProfessionals: totalProfessionals,
     totalBookings: totalBookings,
     bookingDistribution: bookingsByService,
-    latestBookings: getLatestBookingsService,
+    latestBookings: latestBookings,
   };
 };
 export const getAllUsersService = async () => {
