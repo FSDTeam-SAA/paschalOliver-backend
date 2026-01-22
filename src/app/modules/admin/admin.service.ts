@@ -86,7 +86,7 @@ export const dasboardData = async () => {
       },
     },
   ]);
-  console.log(getLatestBookingsService);
+  // console.log(getLatestBookingsService);
   return {
     totalUsers: totalUsers,
     totalProfessionals: totalProfessionals,
@@ -169,4 +169,31 @@ export const rejectProfessionalService = async (professionalId: string) => {
 
   await professional.save();
   return professional;
+};
+
+export const blockUserService = async (userId: string) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new AppError(404, 'User not found');
+  }
+  if (user.isBlocked) {
+    throw new AppError(400, 'User is already blocked');
+  }
+  user.isBlocked = true;
+  await user.save();
+  return user;
+};
+export const unblockUserService = async (userId: string) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new AppError(404, 'User not found');
+  }
+  if (!user.isBlocked) {
+    throw new AppError(400, 'Operation already processed. user is active');
+  }
+  user.isBlocked = false;
+  await user.save();
+  return user;
 };

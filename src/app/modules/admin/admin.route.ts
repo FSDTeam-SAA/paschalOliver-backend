@@ -3,17 +3,19 @@ import auth from '../../middlewares/auth';
 import { userRole } from '../user/user.constant';
 import {
   approveProfessionalController,
+  blockUserController,
   dashboardData,
   getAllProfessional,
   getAllUsers,
   getProfessionalRegistrationRequestsController,
   rejectProfessionalController,
+  unBlockUserController,
 } from './admin.controller';
 
 const router = Router();
 
 router.get('/dashboard-stats', auth(userRole.admin), dashboardData);
-router.get('/all-users', auth(userRole.admin), getAllUsers);
+router.get('/all-clients', auth(userRole.admin), getAllUsers);
 router.get('/all-professionals', auth(userRole.admin), getAllProfessional);
 router.get(
   '/registration-request',
@@ -21,15 +23,22 @@ router.get(
   getProfessionalRegistrationRequestsController,
 );
 router.patch(
-  '/admin/professionals/approve/:professionalId',
+  '/professionals/approve/:professionalId',
   auth('admin'),
   approveProfessionalController,
 );
 
 router.patch(
-  '/admin/professionals/reject/:professionalId',
+  '/professionals/reject/:professionalId',
   auth('admin'),
   rejectProfessionalController,
+);
+
+router.patch('/users/block/:userId', auth(userRole.admin), blockUserController);
+router.patch(
+  '/users/unblock/:userId',
+  auth(userRole.admin),
+  unBlockUserController,
 );
 
 export const AdminRoutes = router;

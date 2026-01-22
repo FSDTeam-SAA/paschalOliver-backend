@@ -2,11 +2,13 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import {
   approveProfessionalService,
+  blockUserService,
   dasboardData,
   getAllProfessionalsService,
   getAllUsersService,
   getProfessionalRegistrationRequests,
   rejectProfessionalService,
+  unblockUserService,
 } from './admin.service';
 
 export const dashboardData = catchAsync(async (req, res) => {
@@ -44,6 +46,7 @@ export const getProfessionalRegistrationRequestsController = catchAsync(
     const result = await getProfessionalRegistrationRequests(
       status as 'pending' | 'approved' | 'rejected',
     );
+    console.log('result', result);
 
     sendResponse(res, {
       statusCode: 200,
@@ -73,6 +76,29 @@ export const approveProfessionalController = catchAsync(async (req, res) => {
     statusCode: 200,
     success: true,
     message: 'Professional approved successfully',
+    data: result,
+  });
+});
+
+export const blockUserController = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const result = await blockUserService(userId!);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'User blocked successfully',
+    data: result,
+  });
+});
+export const unBlockUserController = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const result = await unblockUserService(userId!);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'User activated successfully',
     data: result,
   });
 });
