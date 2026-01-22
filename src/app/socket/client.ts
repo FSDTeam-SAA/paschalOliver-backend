@@ -1,6 +1,5 @@
 import { io as socketIoClient, Socket } from 'socket.io-client';
 
-
 interface MessagePayload {
   chatId: string;
   sender: {
@@ -19,7 +18,7 @@ interface MessagePayload {
 }
 
 const SERVER_URL = 'http://localhost:5000';
-const USER_ID = '69681692017d4e4a38bbd982';
+const USER_ID = '69712a9eae8f4de786b17732';
 // const CHAT_ID = 'chat123';
 
 const socket: Socket = socketIoClient(SERVER_URL, {
@@ -36,9 +35,18 @@ socket.on('stopTyping', ({ userId }) =>
   console.log(`✋ ${userId} stopped typing`),
 );
 
+//new booking
+socket.on('newBooking', (data) => {
+  const message = `Congratulations! ${data.customer.name} booked your service "${data.service.title}"`;
+  // console.log('New Booking:', data);
+  console.log(message);
+});
+
 // Listen for new messages
 socket.on('newMessage', (data: MessagePayload) => {
-  console.log(`📩 New message from ${data?.sender?.name || "Sender"}: ${data?.content}`);
+  console.log(
+    `📩 New message from ${data?.sender?.name || 'Sender'}: ${data?.content}`,
+  );
 });
 
 //delete message
@@ -47,4 +55,3 @@ socket.on('deleteMessage', (data: MessagePayload) => {
 });
 
 socket.on('disconnect', () => console.log('❌ Disconnected from server'));
-
