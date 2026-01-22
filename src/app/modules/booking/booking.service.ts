@@ -17,6 +17,17 @@ const createBooking = async (userId: string, payload: IBooking) => {
     session.startTransaction();
 
     const { service, professional, durationInMinutes } = payload;
+    //check if previous 2 bookings is pending
+    const previousBookings = await Booking.find({
+      customer: userId,
+      status: 'pending',
+    }).session(session);
+    if (previousBookings.length >= 2) {
+      throw new AppError(
+        400,
+        'You already have 2 pending bookings for this service and professional',
+      );
+    }
 
     // Find listing
     const listing = await Listing.findOne({
@@ -85,7 +96,6 @@ const createBooking = async (userId: string, payload: IBooking) => {
         _id: populatedBooking.professional.user,
         isBlocked: false,
       });
-
 
       if (!isActive) {
         throw new AppError(404, 'Professional is not active now');
