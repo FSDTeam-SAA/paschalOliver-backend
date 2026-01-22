@@ -4,6 +4,7 @@ import Conversation from '../conversation/conversation.model';
 import { Types } from 'mongoose';
 import { fileUploader } from '../../helper/fileUploder';
 import { getIo } from '../../socket/server';
+import { User } from '../user/user.model';
 
 const sendMessage = async (
   senderId: string,
@@ -20,7 +21,16 @@ const sendMessage = async (
     throw new AppError(404, 'Conversation not found');
   }
 
-  console.log(conversation);
+  //check if senderId and receiverId are valid in user, alos give and array which is not found in db
+  const sender = await User.findById(senderId);
+  if (!sender) {
+    throw new AppError(404, 'Sender not found');
+  }
+  const receiver = await User.findById(receiverId);
+  if (!receiver) {
+    throw new AppError(404, 'Receiver not found');
+  }
+
   // Check if user is a participant
   const isParticipant = conversation.participants.some((participant: any) =>
     participant._id.equals(new Types.ObjectId(senderId)),

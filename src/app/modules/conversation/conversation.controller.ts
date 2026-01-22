@@ -1,6 +1,7 @@
 import AppError from '../../error/appError';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
+import { User } from '../user/user.model';
 import Conversation from './conversation.model';
 import { ConversationServices } from './conversation.service';
 
@@ -10,6 +11,14 @@ export const createConversation = catchAsync(async (req, res) => {
 
   if (!participantIds || !participantIds.length) {
     throw new Error('Participants are required to create a conversation');
+  }
+
+  //check if participants are valid in user, alos give and array which is not found in db
+  for (const participantId of participantIds) {
+    const user = await User.findById(participantId);
+    if (!user) {
+      throw new Error(`User with ID ${participantId} not found`);
+    }
   }
 
   // Include current user
@@ -115,11 +124,13 @@ export const getUserConversations = catchAsync(async (req, res) => {
   });
 });
 
-
 //delete conversation
 export const deleteConversation = catchAsync(async (req, res) => {
   const { conversationId } = req.params;
-  const conversation = await ConversationServices.deleteConversation(conversationId as string, req.user.id);
+  const conversation = await ConversationServices.deleteConversation(
+    conversationId as string,
+    req.user.id,
+  );
   sendResponse(res, {
     statusCode: 200,
     success: true,
