@@ -31,6 +31,7 @@ const updateBookingValidationSchema = z.object({
         'cancelled_by_professional',
       ])
       .optional(),
+    paymentStatus: z.enum(['pending', 'paid', 'failed']).optional(),
   }),
 });
 

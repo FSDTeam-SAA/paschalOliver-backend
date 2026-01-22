@@ -29,6 +29,10 @@ const paymentSchema = new Schema<IPayment>(
       enum: ['pending', 'completed', 'failed', 'refunded'],
       default: 'pending',
     },
+    receiptUrl: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

@@ -98,7 +98,27 @@ const createOnboardingLink = async (professionalId: string) => {
   return { url: accountLink.url };
 };
 
+const getMyPayments = async (userId: string) => {
+  const payments = await Payment.find({ status: 'completed' })
+    .populate({
+      path: 'booking',
+      populate: {
+        path: 'service',
+        select: 'name',
+      },
+    })
+    .sort({ createdAt: -1 });
+
+  const myPayments = payments.filter(
+    (payment: any) =>
+      payment.booking && payment.booking.customer.toString() === userId,
+  );
+
+  return myPayments;
+};
+
 export const PaymentService = {
   createPaymentIntent,
   createOnboardingLink,
+  getMyPayments,
 };

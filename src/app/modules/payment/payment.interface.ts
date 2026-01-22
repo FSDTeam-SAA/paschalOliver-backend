@@ -12,4 +12,5 @@ export interface IPayment {
 
   transactionId: string;
   status: 'pending' | 'completed' | 'failed' | 'refunded';
+  receiptUrl?: string;
 }

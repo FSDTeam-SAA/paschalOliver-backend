@@ -6,6 +6,7 @@ import { Payment } from './payment.model';
 import Stripe from 'stripe';
 import config from '../../config';
 import AppError from '../../error/appError';
+import { Booking } from '../booking/booking.model';
 
 const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
   const { amount, professionalId, bookingId } = req.body;
@@ -61,17 +62,36 @@ const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
   if (event.type === 'payment_intent.succeeded') {
     const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
+    const receiptUrl = (paymentIntent as any).charges?.data[0]?.receipt_url;
+
     await Payment.findOneAndUpdate(
       { transactionId: paymentIntent.id },
-      { status: 'completed' },
+      { status: 'completed', receiptUrl: receiptUrl },
     );
+    const bookingId = paymentIntent.metadata.bookingId;
+    if (bookingId) {
+      await Booking.findByIdAndUpdate(bookingId, { paymentStatus: 'paid' });
+    }
   }
 
   res.status(200).json({ received: true });
+});
+
+const getMyPayments = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user.userId;
+  const result = await PaymentService.getMyPayments(userId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'My payments retrieved successfully',
+    data: result,
+  });
 });
 
 export const PaymentController = {
   createPaymentIntent,
   createOnboardingLink,
   handleStripeWebhook,
+  getMyPayments,
 };

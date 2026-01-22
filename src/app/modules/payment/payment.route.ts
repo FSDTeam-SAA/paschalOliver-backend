@@ -21,4 +21,10 @@ router.post(
   PaymentController.createOnboardingLink,
 );
 
+router.get(
+  '/my-payments',
+  auth(userRole.client),
+  PaymentController.getMyPayments,
+);
+
 export const PaymentRoutes = router;

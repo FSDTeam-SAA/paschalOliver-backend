@@ -20,4 +20,5 @@ export interface IBooking {
   startTime: string;
   durationInMinutes: number;
   status: TBookingStatus;
+  paymentStatus: 'pending' | 'paid' | 'failed';
 }
