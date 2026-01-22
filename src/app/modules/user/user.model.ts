@@ -59,7 +59,10 @@ const userSchema = new Schema<IUser>(
       type: String,
       select: false,
     },
-
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
     referralCode: {
       type: String,
       unique: true,

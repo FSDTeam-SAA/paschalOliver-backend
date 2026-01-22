@@ -70,7 +70,7 @@ const professionalSchema = new Schema<IProfessional>(
     ],
     status: {
       type: String,
-      enum: ['accepted', 'rejected', 'pending'],
+      enum: ['approved', 'rejected', 'pending'],
       default: 'pending',
     },
     country: { type: String, default: '' },
