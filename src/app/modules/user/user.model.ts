@@ -59,6 +59,19 @@ const userSchema = new Schema<IUser>(
       type: String,
       select: false,
     },
+
+    referralCode: {
+      type: String,
+      unique: true,
+    },
+    referredBy: {
+      type: String,
+      default: null,
+    },
+    walletBalance: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
