@@ -2,10 +2,12 @@ import { RequestHistory } from './requestHistory.model';
 import { Booking } from '../booking/booking.model';
 import { requestHistoryStatus } from './requestHistory.constant';
 
-// import httpStatus from 'http-status-codes';
 import AppError from '../../error/appError';
 import { Listing } from '../listing/listing.model';
 import { Professional } from '../professional/professional.model';
+import { NotificationService } from '../notification/notification.service';
+import { NOTIFICATION_TYPE } from '../notification/notification.constant';
+import { getIo } from '../../socket/server';
 
 // Get professional's request history with filtering and pagination
 const getRequestHistory = async (
@@ -124,12 +126,15 @@ const getRequestHistoryDetails = async (requestId: string) => {
 };
 
 // Accept a request
-const acceptRequest = async (userId: string, requestId: string) => {
-  const requestHistory = await RequestHistory.findById(requestId);
-  const professional: any = await Professional.findOne({ user: userId });
+
+const acceptRequest = async (userId: any, requestId: any) => {
+  const requestHistory: any = await RequestHistory.findById(requestId);
+  const professional = await Professional.findOne({ user: userId });
+
   if (!professional) {
     throw new AppError(404, 'Professional not found');
   }
+
   if (!requestHistory) {
     throw new AppError(404, 'Request history not found');
   }
@@ -178,11 +183,37 @@ const acceptRequest = async (userId: string, requestId: string) => {
       path: 'booking',
       select: 'date startTime durationInMinutes scheduleType',
     },
+    {
+      path: 'professional',
+      select: '_id user personalDetails',
+    },
   ]);
 
-  // TODO: Send real-time notification to customer via Socket.IO
-  // socket.to(customerId).emit('requestAccepted', { requestId, professionalId });
+  console.log(requestHistory);
 
+  // Create notification
+  await NotificationService.createNotification({
+    reciverId: requestHistory.customer._id,
+    receiver: {
+      id: requestHistory.customer._id,
+      name: requestHistory.customer.name,
+    },
+    senderId: requestHistory.professional.user,
+    sender: {
+      id: requestHistory.professional.user,
+      name: requestHistory.professional.personalDetails.name,
+    },
+    type: NOTIFICATION_TYPE.BOOKING_ACCEPTED,
+    title: 'Booking Accepted',
+    message: `New booking accepted: ${requestHistory.professional.personalDetails.name} accept your ${requestHistory.service.title} service on ${requestHistory.booking.date}.`,
+    referenceId: requestHistory.booking._id,
+    referenceModel: 'Booking',
+  });
+
+  // Emit socket event
+  getIo()
+    .to(requestHistory.customer._id.toString())
+    .emit('acceptRequest', { hello: 'hello' });
   return requestHistory;
 };
 
@@ -245,9 +276,6 @@ const rejectRequest = async (userId: string, requestId: string) => {
       select: 'date startTime durationInMinutes scheduleType',
     },
   ]);
-
-  // TODO: Send real-time notification to customer via Socket.IO
-  // socket.to(customerId).emit('requestRejected', { requestId, professionalId });
 
   return requestHistory;
 };

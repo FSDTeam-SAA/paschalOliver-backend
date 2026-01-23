@@ -18,7 +18,7 @@ interface MessagePayload {
 }
 
 const SERVER_URL = 'http://localhost:5000';
-const USER_ID = '696e933456b77292177ba162';
+const USER_ID = '69680f25fda92b3c5a16e4ca';
 // const CHAT_ID = 'chat123';
 
 const socket: Socket = socketIoClient(SERVER_URL, {
@@ -53,6 +53,13 @@ socket.on('newMessage', (data: MessagePayload) => {
 socket.on('newComment', (data) => {
   // console.log('New Comment:', data);
   const message = `You received a new review for "${data.serviceId.title}" from ${data.userId.name}.`;
+  console.log(message);
+});
+
+//accepted booking request
+socket.on('acceptRequest', (data) => {
+  console.log(data);
+  const message = `Your booking request for  has been accepted by .`;
   console.log(message);
 });
 

@@ -1,7 +1,22 @@
 import { Notification } from './notification.model';
 import { INotification } from './notification.interface';
+import { ClientSession } from 'mongoose';
 
-const createNotification = async (payload: Partial<INotification>) => {
+/**
+ * ✅ Create notification
+ * - Normal call → works
+ * - Transaction call → works
+ */
+const createNotification: any = async (
+  payload: Partial<INotification>,
+  session?: ClientSession,
+) => {
+  if (session) {
+    // 🔥 transaction-aware write
+    return Notification.create([payload], { session });
+  }
+
+  // 🟢 normal write (no transaction)
   return Notification.create(payload);
 };
 
@@ -26,9 +41,11 @@ const markAsRead = async (notificationId: string, userId: string) => {
     { isRead: true },
     { new: true },
   );
+
   if (!result) {
     throw new Error('Notification not found');
   }
+
   return result;
 };
 
@@ -37,9 +54,12 @@ const markAllAsRead = async (userId: string) => {
     { reciverId: userId, isRead: false },
     { isRead: true },
   );
+
   if (result.modifiedCount === 0) {
     throw new Error('No notifications to mark as read');
   }
+
+  return result;
 };
 
 const deleteNotification = async (notificationId: string, userId: string) => {
@@ -47,9 +67,12 @@ const deleteNotification = async (notificationId: string, userId: string) => {
     { _id: notificationId, reciverId: userId },
     { isDeleted: true },
   );
+
   if (!result) {
     throw new Error('Notification not found');
   }
+
+  return result;
 };
 
 export const NotificationService = {
