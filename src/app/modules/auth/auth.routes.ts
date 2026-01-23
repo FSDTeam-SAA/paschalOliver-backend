@@ -7,6 +7,11 @@ const router = express.Router();
 
 router.post('/register', authController.registerUser);
 router.post('/login', authController.loginUser);
+router.post(
+  '/switch-role',
+  auth(userRole.client, userRole.professional),
+  authController.switchRole,
+);
 router.post('/refresh-token', authController.refreshToken);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/verify-email', authController.verifyEmail);
