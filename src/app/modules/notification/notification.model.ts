@@ -1,5 +1,6 @@
 import { Schema, model, Document } from 'mongoose';
 import { INotification, IUserSnapshot } from './notification.interface';
+import { User } from '../user/user.model';
 
 export interface INotificationDocument extends INotification, Document {}
 
@@ -63,18 +64,35 @@ const notificationSchema = new Schema<INotificationDocument>(
     isRead: {
       type: Boolean,
       default: false,
-      index: true,
     },
 
     isDeleted: {
       type: Boolean,
       default: false,
-      index: true,
     },
   },
   { timestamps: true },
 );
 
+//pre middleware check reciver id exist or not in database
+notificationSchema.pre('save', async function (next) {
+  const reciverId = this.reciverId;
+  const reciver = await User.findById({ _id: reciverId });
+  if (!reciver) {
+    throw new Error('reciver not found in database');
+  }
+  next();
+});
+
+//pre middleware check sender id exist or not in database
+notificationSchema.pre('save', async function (next) {
+  const senderId = this.senderId;
+  const sender = await User.findById({ _id: senderId });
+  if (!sender) {
+    throw new Error('sender not found in database');
+  }
+  next();
+});
 
 export const Notification = model<INotificationDocument>(
   'Notification',
