@@ -15,9 +15,9 @@ router.post(
 router.get('/', auth(userRole.client), BookingControllers.getAllBookings);
 
 router.patch(
-  '/:id/cancel',
-  checkUserBlocked,
+  '/:bookingId/cancel',
   auth(userRole.client),
+  checkUserBlocked,
   BookingControllers.cancelBooking,
 );
 

@@ -42,6 +42,29 @@ const loginUser = catchAsync(async (req, res) => {
   });
 });
 
+const switchRole = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+
+  const result = await authService.switchRole(userId);
+
+  res.cookie('refreshToken', result.refreshToken, {
+    httpOnly: true,
+    secure: config.env === 'production',
+    // sameSite: 'strict',
+  });
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Role switched successfully',
+    data: {
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      user: result.user,
+    },
+  });
+});
+
 const refreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.body;
   const result = await authService.refreshToken(refreshToken);
@@ -130,6 +153,7 @@ export const authController = {
   registerUser,
   verifyEmail,
   loginUser,
+  switchRole,
   refreshToken,
   forgotPassword,
   resetPassword,

@@ -82,10 +82,23 @@ const rejectRequest: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const completeRequest: RequestHandler = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  const result = await RequestHistoryServices.completeRequest(id as string);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Request completed successfully',
+    data: result,
+  });
+});
 
 export const RequestHistoryControllers = {
   getRequestHistory,
   getRequestHistoryDetails,
   acceptRequest,
   rejectRequest,
+  completeRequest,
 };

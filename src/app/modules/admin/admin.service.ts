@@ -1,8 +1,12 @@
+import mongoose, { Types } from 'mongoose';
 import AppError from '../../error/appError';
 import { Booking } from '../booking/booking.model';
+import { NotificationService } from '../notification/notification.service';
 import { Professional } from '../professional/professional.model';
 
 import { User } from '../user/user.model';
+import { NOTIFICATION_TYPE } from '../notification/notification.constant';
+import { getIo } from '../../socket/server';
 
 export const bookingManagementService = async () => {
   const getLatestBookingsService = await Booking.aggregate([
@@ -201,29 +205,111 @@ export const rejectProfessionalService = async (professionalId: string) => {
   return professional;
 };
 
-export const blockUserService = async (userId: string) => {
-  const user = await User.findById(userId);
+export const blockUserService = async (userId: string, adminId: string) => {
+  const session = await mongoose.startSession();
 
-  if (!user) {
-    throw new AppError(404, 'User not found');
+  try {
+    session.startTransaction();
+
+    // 1️⃣ Atomically block user (only if not already blocked)
+    const user = await User.findOneAndUpdate(
+      { _id: userId, isBlocked: false },
+      { $set: { isBlocked: true } },
+      { new: true, session },
+    );
+
+    if (!user) {
+      throw new AppError(404, 'User not found or already blocked');
+    }
+
+    // 2️⃣ Create notification (inside transaction)
+    await NotificationService.createNotification(
+      {
+        reciverId: user._id,
+        receiver: {
+          id: user._id,
+          name: user.name,
+        },
+        senderId: new Types.ObjectId(adminId),
+        sender: {
+          id: new Types.ObjectId(adminId),
+          name: 'Admin',
+        },
+        type: NOTIFICATION_TYPE.BLOCK_USER,
+        title: 'User blocked',
+        message: 'Your account has been blocked by admin',
+      },
+      session, // 🔥 important
+    );
+
+    // 3️⃣ Commit transaction
+    await session.commitTransaction();
+
+    // 4️⃣ Emit socket event AFTER commit
+    setImmediate(() => {
+      getIo().to(user._id.toString()).emit('userBlocked', {
+        type: NOTIFICATION_TYPE.BLOCK_USER,
+      });
+    });
+
+    return user;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
   }
-  if (user.isBlocked) {
-    throw new AppError(400, 'User is already blocked');
-  }
-  user.isBlocked = true;
-  await user.save();
-  return user;
 };
-export const unblockUserService = async (userId: string) => {
-  const user = await User.findById(userId);
 
-  if (!user) {
-    throw new AppError(404, 'User not found');
+export const unblockUserService = async (userId: string, adminId: string) => {
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    const user = await User.findOneAndUpdate(
+      { _id: userId, isBlocked: true },
+      { $set: { isBlocked: false } },
+      { new: true, session },
+    );
+
+    if (!user) {
+      throw new AppError(404, 'User not found or already active');
+    }
+
+    await NotificationService.createNotification(
+      {
+        reciverId: user._id,
+        receiver: {
+          id: user._id,
+          name: user.name,
+        },
+        senderId: new Types.ObjectId(adminId),
+        sender: {
+          id: new Types.ObjectId(adminId),
+          name: 'Admin',
+        },
+        type: NOTIFICATION_TYPE.UNBLOCK_USER,
+        title: 'User unblocked',
+        message: 'Your account has been unblocked by admin',
+      },
+      session,
+    );
+
+    await session.commitTransaction();
+
+    setImmediate(() => {
+      getIo().to(user._id.toString()).emit('userUnblocked', {
+        type: NOTIFICATION_TYPE.UNBLOCK_USER,
+      });
+      console.log('unblock notification sent successfully');
+    });
+
+    return user;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
   }
-  if (!user.isBlocked) {
-    throw new AppError(400, 'Operation already processed. user is active');
-  }
-  user.isBlocked = false;
-  await user.save();
-  return user;
 };

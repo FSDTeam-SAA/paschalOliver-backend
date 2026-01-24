@@ -67,6 +67,52 @@ const loginUser = async (payload: Partial<IUser>) => {
   return { accessToken, refreshToken, user: userWithoutPassword };
 };
 
+const switchRole = async (userId: string) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(404, 'User not found');
+  }
+
+  const newRole = user.role === 'client' ? 'professional' : 'client';
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { role: newRole },
+    { new: true },
+  );
+
+  if (!updatedUser) {
+    throw new AppError(404, 'User update failed');
+  }
+
+  const accessToken = jwtHelpers.genaretToken(
+    {
+      id: updatedUser._id,
+      role: updatedUser.role,
+      email: updatedUser.email,
+    },
+    config.jwt.accessTokenSecret as Secret,
+    config.jwt.accessTokenExpires,
+  );
+
+  const refreshToken = jwtHelpers.genaretToken(
+    {
+      id: updatedUser._id,
+      role: updatedUser.role,
+      email: updatedUser.email,
+    },
+    config.jwt.refreshTokenSecret as Secret,
+    config.jwt.refreshTokenExpires,
+  );
+
+  const { password, ...userWithoutPassword } = updatedUser.toObject();
+  return {
+    accessToken,
+    refreshToken,
+    user: userWithoutPassword,
+  };
+};
+
 const refreshToken = async (token: string) => {
   const varifiedToken = jwtHelpers.verifyToken(
     token,
@@ -174,6 +220,7 @@ const changePassword = async (
 export const authService = {
   registerUser,
   loginUser,
+  switchRole,
   refreshToken,
   forgotPassword,
   verifyEmail,

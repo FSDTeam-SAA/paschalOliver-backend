@@ -16,7 +16,7 @@ const requestHistorySchema = new Schema<IRequestHistory>(
     },
     professional: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'Professional',
     },
     service: {
       type: Schema.Types.ObjectId,
