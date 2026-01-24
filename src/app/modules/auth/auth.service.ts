@@ -7,10 +7,33 @@ import sendMailer from '../../helper/sendMailer';
 import bcrypt from 'bcryptjs';
 import createOtpTemplate from '../../utils/createOtpTemplate';
 import { User } from '../user/user.model';
+import { generateReferralCode } from '../../helper/referralHelper';
 
 const registerUser = async (payload: Partial<IUser>) => {
   const exist = await User.findOne({ email: payload.email });
   if (exist) throw new AppError(400, 'User already exists');
+
+  // Referral Code
+  let newCode = generateReferralCode();
+  let isUnique = await User.findOne({ referralCode: newCode });
+  while (isUnique) {
+    newCode = generateReferralCode();
+    isUnique = await User.findOne({ referralCode: newCode });
+  }
+  payload.referralCode = newCode;
+
+  if (payload.referredBy) {
+    const referrer = await User.findOne({ referralCode: payload.referredBy });
+
+    if (referrer) {
+      await User.findByIdAndUpdate(referrer._id, {
+        $inc: { walletBalance: 10 },
+      });
+      payload.walletBalance = 10;
+    } else {
+      delete payload.referredBy;
+    }
+  }
 
   const user = await User.create(payload);
 

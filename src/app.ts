@@ -5,7 +5,17 @@ import notFoundError from './app/error/notFoundError';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import router from './app/routes/routes';
 import morgan from 'morgan';
+import http from 'http';
+import { initSocket } from './app/socket/server';
+import { PaymentController } from './app/modules/payment/payment.controller';
 const app = express();
+const serverInstance = http.createServer(app);
+
+app.post(
+  '/api/v1/payment/webhook',
+  express.raw({ type: 'application/json' }),
+  PaymentController.handleStripeWebhook,
+);
 
 // Middlewares
 app.use(morgan('dev'));
@@ -28,4 +38,7 @@ app.use(notFoundError);
 // Global error handler
 app.use(globalErrorHandler);
 
-export default app;
+const ioInstance = initSocket(serverInstance);
+
+export const server = serverInstance;
+export const io = ioInstance;

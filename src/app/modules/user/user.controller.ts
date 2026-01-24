@@ -1,6 +1,5 @@
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
-import pick from '../../helper/pick';
 import { UserServices } from './user.service';
 import { fileUploader } from '../../helper/fileUploder';
 
@@ -75,19 +74,6 @@ export const UserControllers = {
   updateUserLanguage,
 };
 
-// const getAllUser = catchAsync(async (req, res) => {
-//   const filters = pick(req.query, ['searchTerm', 'role', 'name', 'email']);
-//   const options = pick(req.query, ['page', 'limit', 'sortBy', 'sortOrder']);
-//   const result = await userService.getAllUser(filters, options);
-//   sendResponse(res, {
-//     statusCode: 200,
-//     success: true,
-//     message: 'User fetched successfully',
-//     meta: result.meta,
-//     data: result.data,
-//   });
-// });
-
 // const getUserById = catchAsync(async (req, res) => {
 //   const { id } = req.params;
 //   if (!id) {
@@ -99,6 +85,19 @@ export const UserControllers = {
 //     success: true,
 //     message: 'User fetched successfully',
 //     data: result,
+//   });
+// });
+
+// const getAllUser = catchAsync(async (req, res) => {
+//   const filters = pick(req.query, ['searchTerm', 'role', 'name', 'email']);
+//   const options = pick(req.query, ['page', 'limit', 'sortBy', 'sortOrder']);
+//   const result = await userService.getAllUser(filters, options);
+//   sendResponse(res, {
+//     statusCode: 200,
+//     success: true,
+//     message: 'User fetched successfully',
+//     meta: result.meta,
+//     data: result.data,
 //   });
 // });
 

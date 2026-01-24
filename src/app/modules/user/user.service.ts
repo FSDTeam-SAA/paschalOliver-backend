@@ -1,6 +1,4 @@
-import AppError from '../../error/appError';
-import { fileUploader } from '../../helper/fileUploder';
-import pagination, { IOption } from '../../helper/pagenation';
+import { deleteFromCloudinary } from '../../helper/deleteImage';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 
@@ -10,11 +8,18 @@ const getUserProfile = async (userId: string) => {
 };
 
 const updatePersonalDetails = async (id: string, payload: Partial<IUser>) => {
+  if (payload.image) {
+    const currentUser = await User.findById(id);
+
+    if (currentUser?.image) {
+      await deleteFromCloudinary(currentUser.image);
+    }
+  }
+
   const result = await User.findByIdAndUpdate(id, payload, {
     new: true,
     runValidators: true,
   });
-
   return result;
 };
 
@@ -32,6 +37,14 @@ export const UserServices = {
   updatePersonalDetails,
   updateUserLanguage,
 };
+
+// const getUserById = async (id: string) => {
+//   const result = await User.findById(id);
+//   if (!result) {
+//     throw new AppError(404, 'User not found');
+//   }
+//   return result;
+// };
 
 // const getAllUser = async (params: any, options: IOption) => {
 //   const { page, limit, skip, sortBy, sortOrder } = pagination(options);
@@ -77,14 +90,6 @@ export const UserServices = {
 //       limit,
 //     },
 //   };
-// };
-
-// const getUserById = async (id: string) => {
-//   const result = await User.findById(id);
-//   if (!result) {
-//     throw new AppError(404, 'User not found');
-//   }
-//   return result;
 // };
 
 // const updateUserById = async (

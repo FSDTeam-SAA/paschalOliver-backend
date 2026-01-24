@@ -14,4 +14,9 @@ export interface IUser {
   isActive: boolean;
   otp?: string;
   otpExpires?: Date;
+  stripeCustomerId?: string;
+
+  referralCode: string;
+  referredBy?: string;
+  walletBalance: number;
 }
