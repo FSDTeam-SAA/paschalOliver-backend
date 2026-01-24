@@ -7,8 +7,6 @@ export const checkUserBlocked = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
 
     const user = await User.findById(userId).select('isBlocked role');
-    console.log(user);
-    console.log(user?.isBlocked);
     if (!user) {
       return res.status(404).json({
         success: false,

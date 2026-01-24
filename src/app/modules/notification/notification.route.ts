@@ -1,15 +1,17 @@
 import { Router } from 'express';
 import { NotificationController } from './notification.controller';
-import auth from '../../middlewares/auth';
 
 const router = Router();
 
-router.get('/get-my-notifications', auth(), NotificationController.getMyNotifications);
+router.get('/get-my-notifications', NotificationController.getMyNotifications);
 
-router.patch('/read/:notificationId', auth(), NotificationController.markAsRead);
+router.patch('/read/:notificationId', NotificationController.markAsRead);
 
-router.patch('/read-all', auth(), NotificationController.markAllAsRead);
+router.patch('/read-all', NotificationController.markAllAsRead);
 
-router.delete('/delete/:notificationId', auth(), NotificationController.deleteNotification);
+router.delete(
+  '/delete/:notificationId',
+  NotificationController.deleteNotification,
+);
 
 export const NotificationRoutes = router;
