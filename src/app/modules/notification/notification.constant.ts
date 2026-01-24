@@ -24,6 +24,10 @@ export const NOTIFICATION_TYPE = {
   // Security
   PASSWORD_RESET: 'PASSWORD_RESET',
 
+  // Block user
+  BLOCK_USER: 'BLOCK_USER',
+  UNBLOCK_USER: 'UNBLOCK_USER',
+
   // System
   SYSTEM: 'SYSTEM',
 } as const;

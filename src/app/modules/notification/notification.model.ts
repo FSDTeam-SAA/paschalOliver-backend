@@ -63,29 +63,20 @@ const notificationSchema = new Schema<INotificationDocument>(
     isRead: {
       type: Boolean,
       default: false,
-      index: true, // ✅ Added index for faster queries
+      index: true,
     },
 
     isDeleted: {
       type: Boolean,
       default: false,
-      index: true, // ✅ Added index for faster queries
+      index: true,
     },
   },
   { timestamps: true },
 );
 
-// ✅ COMPOUND INDEX for common query pattern
-// This makes "get my unread notifications" queries MUCH faster
 notificationSchema.index({ reciverId: 1, isDeleted: 1, isRead: 1 });
-notificationSchema.index({ reciverId: 1, createdAt: -1 }); // For sorting by date
-
-// ❌ REMOVED PROBLEMATIC PRE-SAVE HOOKS
-// Validation should happen at business logic level, not database level
-// These hooks were causing:
-// - 2 extra DB queries per notification
-// - Performance bottlenecks
-// - Wrong syntax: findById({ _id: id }) should be findById(id)
+notificationSchema.index({ reciverId: 1, createdAt: -1 });
 
 export const Notification = model<INotificationDocument>(
   'Notification',

@@ -116,86 +116,86 @@ const createBooking = async (userId: string, payload: IBooking) => {
       }
     }
 
-    // ✅ Commit transaction BEFORE notifications
+    // ✅ Validate required fields for notification
+    if (
+      !populatedBooking?.professional?.user ||
+      !populatedBooking?.professional?.personalDetails?.name ||
+      !populatedBooking?.customer?._id ||
+      !populatedBooking?.customer?.name ||
+      !populatedBooking?.service?.title ||
+      !populatedBooking?._id ||
+      !populatedBooking?.date
+    ) {
+      throw new AppError(500, 'Missing required fields for notification');
+    }
+
+    // ✅ Create notification INSIDE transaction
+    await NotificationService.createNotification(
+      {
+        reciverId: populatedBooking.professional.user,
+        receiver: {
+          id: populatedBooking.professional.user,
+          name: populatedBooking.professional.personalDetails.name,
+        },
+        senderId: populatedBooking.customer._id,
+        sender: {
+          id: populatedBooking.customer._id,
+          name: populatedBooking.customer.name,
+        },
+        type: NOTIFICATION_TYPE.BOOKING_CREATED,
+        title: 'New Booking Request',
+        message: `${populatedBooking.customer.name} booked your "${populatedBooking.service.title}" service on ${new Date(populatedBooking.date).toDateString()}.`,
+        referenceId: populatedBooking._id,
+        referenceModel: 'Booking',
+      },
+      session, // ← Pass session
+    );
+
+    // ✅ Commit transaction (booking + notification atomically)
     await session.commitTransaction();
-    console.log('✅ Booking created successfully');
+    console.log('✅ Booking and notification created successfully');
 
-    // ✅ Fire-and-forget: Send notifications AFTER transaction
-    setImmediate(async () => {
+    // ✅ Prepare socket payload (using already populated data)
+    const socketPayload = {
+      type: 'NEW_BOOKING',
+      bookingId: populatedBooking._id,
+      customer: {
+        id: populatedBooking.customer._id,
+        name: populatedBooking.customer.name,
+        avatar: populatedBooking.customer.avatar,
+      },
+      service: {
+        id: populatedBooking.service._id,
+        title: populatedBooking.service.title,
+        type: populatedBooking.service.type,
+      },
+      booking: {
+        date: populatedBooking.date,
+        startTime: populatedBooking.startTime,
+        duration: populatedBooking.durationInMinutes,
+        amount: populatedBooking.amount,
+      },
+      status: populatedBooking.status,
+      timestamp: new Date().toISOString(),
+    };
+
+    // ✅ Fire-and-forget: Send socket event AFTER transaction
+    setImmediate(() => {
       try {
-        // Type guard for required fields
-        if (
-          !populatedBooking?.professional?.user ||
-          !populatedBooking?.professional?.personalDetails?.name ||
-          !populatedBooking?.customer?._id ||
-          !populatedBooking?.customer?.name ||
-          !populatedBooking?.service?.title ||
-          !populatedBooking?._id ||
-          !populatedBooking?.date
-        ) {
-          console.error('❌ Missing required fields for notification');
-          return;
-        }
-
-        // Create notification in database
-        await NotificationService.createNotification({
-          // Receiver (professional)
-          reciverId: populatedBooking.professional.user,
-          receiver: {
-            id: populatedBooking.professional.user,
-            name: populatedBooking.professional.personalDetails.name,
-          },
-          // Sender (customer)
-          senderId: populatedBooking.customer._id,
-          sender: {
-            id: populatedBooking.customer._id,
-            name: populatedBooking.customer.name,
-          },
-          type: NOTIFICATION_TYPE.BOOKING_CREATED,
-          title: 'New Booking Request',
-          message: `${populatedBooking.customer.name} booked your "${populatedBooking.service.title}" service on ${new Date(populatedBooking.date).toDateString()}.`,
-          referenceId: populatedBooking._id,
-          referenceModel: 'Booking',
-        });
-
-        // Send real-time socket event to professional
-        const socketPayload = {
-          type: 'NEW_BOOKING',
-          bookingId: populatedBooking._id,
-          customer: {
-            id: populatedBooking.customer._id,
-            name: populatedBooking.customer.name,
-            avatar: populatedBooking.customer.avatar,
-          },
-          service: {
-            id: populatedBooking.service._id,
-            title: populatedBooking.service.title,
-            type: populatedBooking.service.type,
-          },
-          booking: {
-            date: populatedBooking.date,
-            startTime: populatedBooking.startTime,
-            duration: populatedBooking.durationInMinutes,
-            amount: populatedBooking.amount,
-          },
-          status: populatedBooking.status,
-          timestamp: new Date().toISOString(),
-        };
-
         getIo()
           .to(populatedBooking.professional.user.toString())
           .emit('newBooking', socketPayload);
 
-        console.log('✅ Booking notification sent successfully');
+        console.log('✅ Socket notification sent');
       } catch (error) {
-        console.error('❌ Error sending booking notification:', error);
-        // TODO: Add to retry queue
+        console.error('❌ Socket emit failed:', error);
+        // Socket failure is non-critical, notification is already in DB
       }
     });
 
     return populatedBooking;
   } catch (error) {
-    // ❌ Rollback transaction on error
+    // ❌ Rollback transaction on any error
     await session.abortTransaction();
     console.error('❌ Booking creation failed:', error);
     throw error;

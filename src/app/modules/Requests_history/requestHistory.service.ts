@@ -216,43 +216,25 @@ const acceptRequest = async (userId: string, requestId: string) => {
       );
     }
 
-    await session.commitTransaction();
-    console.log('✅ Transaction committed successfully');
-
+    await NotificationService.createNotification({
+      reciverId: updatedRequestHistory.customer._id,
+      receiver: {
+        id: updatedRequestHistory.customer._id,
+        name: updatedRequestHistory.customer.name,
+      },
+      senderId: updatedRequestHistory.professional.user,
+      sender: {
+        id: updatedRequestHistory.professional.user,
+        name: updatedRequestHistory.professional.personalDetails.name,
+      },
+      type: NOTIFICATION_TYPE.BOOKING_ACCEPTED,
+      title: 'Booking Accepted',
+      message: `${updatedRequestHistory.professional.personalDetails.name} accepted your ${updatedRequestHistory.service.title} service on ${updatedRequestHistory.booking.date}.`,
+      referenceId: updatedRequestHistory.booking._id,
+      referenceModel: 'Booking',
+    });
     setImmediate(async () => {
       try {
-        if (
-          !updatedRequestHistory?.customer?._id ||
-          !updatedRequestHistory?.customer?.name ||
-          !updatedRequestHistory?.professional?.user ||
-          !updatedRequestHistory?.professional?.personalDetails?.name ||
-          !updatedRequestHistory?.service?.title ||
-          !updatedRequestHistory?.booking?._id ||
-          !updatedRequestHistory?.booking?.date
-        ) {
-          console.error('❌ Missing required fields for notification');
-          return;
-        }
-
-        // Create notification in database (can retry if fails)
-        await NotificationService.createNotification({
-          reciverId: updatedRequestHistory.customer._id,
-          receiver: {
-            id: updatedRequestHistory.customer._id,
-            name: updatedRequestHistory.customer.name,
-          },
-          senderId: updatedRequestHistory.professional.user,
-          sender: {
-            id: updatedRequestHistory.professional.user,
-            name: updatedRequestHistory.professional.personalDetails.name,
-          },
-          type: NOTIFICATION_TYPE.BOOKING_ACCEPTED,
-          title: 'Booking Accepted',
-          message: `${updatedRequestHistory.professional.personalDetails.name} accepted your ${updatedRequestHistory.service.title} service on ${updatedRequestHistory.booking.date}.`,
-          referenceId: updatedRequestHistory.booking._id,
-          referenceModel: 'Booking',
-        });
-
         // Send real-time socket event
         const socketPayload = {
           type: 'BOOKING_ACCEPTED',
@@ -284,7 +266,8 @@ const acceptRequest = async (userId: string, requestId: string) => {
         console.error('❌ Error sending notification/socket event:', error);
       }
     });
-
+    await session.commitTransaction();
+    console.log('✅ Transaction committed successfully');
     return updatedRequestHistory || requestHistory;
   } catch (error) {
     await session.abortTransaction();
@@ -297,7 +280,6 @@ const acceptRequest = async (userId: string, requestId: string) => {
 
 // Reject a request
 const rejectRequest = async (userId: string, requestId: string) => {
-  // ✅ STEP 1: Parallel queries (validation phase)
   const [requestHistory, professional] = await Promise.all([
     RequestHistory.findById(requestId).populate([
       {
@@ -324,7 +306,6 @@ const rejectRequest = async (userId: string, requestId: string) => {
     Professional.findOne({ user: userId }).lean(),
   ]);
 
-  // ✅ STEP 2: Validation
   if (!requestHistory) {
     throw new AppError(404, 'Request history not found');
   }
@@ -349,12 +330,10 @@ const rejectRequest = async (userId: string, requestId: string) => {
     );
   }
 
-  // ✅ STEP 3: Start transaction for critical updates
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    // 🔒 CRITICAL: Update both documents in transaction
     const updatedRequestHistory: any = await RequestHistory.findByIdAndUpdate(
       requestId,
       { status: 'cancelled_by_professional' },
@@ -390,49 +369,31 @@ const rejectRequest = async (userId: string, requestId: string) => {
         { session, new: true },
       );
     }
-
-    // ✅ Commit transaction
+    // Create notification in database
+    await NotificationService.createNotification({
+      // Receiver (customer)
+      reciverId: updatedRequestHistory.customer._id,
+      receiver: {
+        id: updatedRequestHistory.customer._id,
+        name: updatedRequestHistory.customer.name,
+      },
+      // Sender (professional)
+      senderId: updatedRequestHistory.professional.user,
+      sender: {
+        id: updatedRequestHistory.professional.user,
+        name: updatedRequestHistory.professional.personalDetails.name,
+      },
+      type: NOTIFICATION_TYPE.BOOKING_CANCELLED,
+      title: 'Booking Rejected',
+      message: `${updatedRequestHistory.professional.personalDetails.name} rejected your booking request for "${updatedRequestHistory.service.title}" on ${updatedRequestHistory.booking.date}.`,
+      referenceId: updatedRequestHistory.booking._id,
+      referenceModel: 'Booking',
+    });
     await session.commitTransaction();
     console.log('✅ Rejection transaction committed successfully');
 
-    // ✅ STEP 4: Fire-and-forget notifications (outside transaction)
     setImmediate(async () => {
       try {
-        // Type guard for required fields
-        if (
-          !updatedRequestHistory?.customer?._id ||
-          !updatedRequestHistory?.customer?.name ||
-          !updatedRequestHistory?.professional?.user ||
-          !updatedRequestHistory?.professional?.personalDetails?.name ||
-          !updatedRequestHistory?.service?.title ||
-          !updatedRequestHistory?.booking?._id ||
-          !updatedRequestHistory?.booking?.date
-        ) {
-          console.error('❌ Missing required fields for notification');
-          return;
-        }
-
-        // Create notification in database
-        await NotificationService.createNotification({
-          // Receiver (customer)
-          reciverId: updatedRequestHistory.customer._id,
-          receiver: {
-            id: updatedRequestHistory.customer._id,
-            name: updatedRequestHistory.customer.name,
-          },
-          // Sender (professional)
-          senderId: updatedRequestHistory.professional.user,
-          sender: {
-            id: updatedRequestHistory.professional.user,
-            name: updatedRequestHistory.professional.personalDetails.name,
-          },
-          type: NOTIFICATION_TYPE.BOOKING_CANCELLED,
-          title: 'Booking Rejected',
-          message: `${updatedRequestHistory.professional.personalDetails.name} rejected your booking request for "${updatedRequestHistory.service.title}" on ${updatedRequestHistory.booking.date}.`,
-          referenceId: updatedRequestHistory.booking._id,
-          referenceModel: 'Booking',
-        });
-
         // Send real-time socket event to customer
         const socketPayload = {
           type: 'BOOKING_REJECTED',
@@ -467,25 +428,15 @@ const rejectRequest = async (userId: string, requestId: string) => {
 
     return updatedRequestHistory || requestHistory;
   } catch (error) {
-    // ❌ Rollback on error
     await session.abortTransaction();
     console.error('❌ Rejection transaction aborted:', error);
     throw error;
   } finally {
-    // 🧹 Cleanup
     session.endSession();
   }
 };
 
-/**
- * ✅ OPTIMIZED: Complete booking request
- * - Transaction for data consistency
- * - Parallel initial queries
- * - Notifications to BOTH customer and professional
- * - Fire-and-forget pattern
- */
 const completeRequest = async (requestId: string) => {
-  // ✅ STEP 1: Fetch and populate data (single query with population)
   const requestHistory: any = await RequestHistory.findById(requestId).populate(
     [
       {
@@ -511,7 +462,6 @@ const completeRequest = async (requestId: string) => {
     ],
   );
 
-  // ✅ STEP 2: Validation
   if (!requestHistory) {
     throw new AppError(404, 'Request history not found');
   }
@@ -529,7 +479,6 @@ const completeRequest = async (requestId: string) => {
     throw new AppError(400, errorMessage);
   }
 
-  // ✅ STEP 3: Start transaction for critical updates
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -569,73 +518,30 @@ const completeRequest = async (requestId: string) => {
       { session, new: true },
     );
 
-    // ✅ Commit transaction
+    await NotificationService.createNotification({
+      // Receiver (customer)
+      reciverId: updatedRequestHistory.customer._id,
+      receiver: {
+        id: updatedRequestHistory.customer._id,
+        name: updatedRequestHistory.customer.name,
+      },
+      // Sender (professional)
+      senderId: updatedRequestHistory.professional.user,
+      sender: {
+        id: updatedRequestHistory.professional.user,
+        name: updatedRequestHistory.professional.personalDetails.name,
+      },
+      type: NOTIFICATION_TYPE.BOOKING_COMPLETED,
+      title: 'Service Completed',
+      message: `${updatedRequestHistory.professional.personalDetails.name} completed your "${updatedRequestHistory.service.title}" service. Please review the service!`,
+      referenceId: updatedRequestHistory.booking._id,
+      referenceModel: 'Booking',
+    });
     await session.commitTransaction();
     console.log('✅ Completion transaction committed successfully');
 
-    // ✅ STEP 4: Fire-and-forget notifications (outside transaction)
-    // Send notifications to BOTH customer and professional
     setImmediate(async () => {
       try {
-        // Type guard for required fields
-        if (
-          !updatedRequestHistory?.customer?._id ||
-          !updatedRequestHistory?.customer?.name ||
-          !updatedRequestHistory?.professional?.user ||
-          !updatedRequestHistory?.professional?.personalDetails?.name ||
-          !updatedRequestHistory?.service?.title ||
-          !updatedRequestHistory?.booking?._id ||
-          !updatedRequestHistory?.booking?.date
-        ) {
-          console.error(
-            '❌ Missing required fields for completion notification',
-          );
-          return;
-        }
-
-        // 📧 Notification 1: To Customer (Service completed)
-        await NotificationService.createNotification({
-          // Receiver (customer)
-          reciverId: updatedRequestHistory.customer._id,
-          receiver: {
-            id: updatedRequestHistory.customer._id,
-            name: updatedRequestHistory.customer.name,
-          },
-          // Sender (professional)
-          senderId: updatedRequestHistory.professional.user,
-          sender: {
-            id: updatedRequestHistory.professional.user,
-            name: updatedRequestHistory.professional.personalDetails.name,
-          },
-          type: NOTIFICATION_TYPE.BOOKING_COMPLETED,
-          title: 'Service Completed',
-          message: `${updatedRequestHistory.professional.personalDetails.name} completed your "${updatedRequestHistory.service.title}" service. Please review the service!`,
-          referenceId: updatedRequestHistory.booking._id,
-          referenceModel: 'Booking',
-        });
-
-        // 📧 Notification 2: To Professional (Confirmation + Payment reminder)
-        await NotificationService.createNotification({
-          // Receiver (professional)
-          reciverId: updatedRequestHistory.professional.user,
-          receiver: {
-            id: updatedRequestHistory.professional.user,
-            name: updatedRequestHistory.professional.personalDetails.name,
-          },
-          // Sender (system/customer)
-          senderId: updatedRequestHistory.customer._id,
-          sender: {
-            id: updatedRequestHistory.customer._id,
-            name: updatedRequestHistory.customer.name,
-          },
-          type: NOTIFICATION_TYPE.BOOKING_COMPLETED,
-          title: 'Service Marked Complete',
-          message: `You marked "${updatedRequestHistory.service.title}" service as completed for ${updatedRequestHistory.customer.name}.`,
-          referenceId: updatedRequestHistory.booking._id,
-          referenceModel: 'Booking',
-        });
-
-        // 🔔 Socket Event 1: To Customer
         const customerSocketPayload = {
           type: 'BOOKING_COMPLETED',
           requestId: updatedRequestHistory._id,
@@ -663,33 +569,9 @@ const completeRequest = async (requestId: string) => {
           .to(updatedRequestHistory.customer._id.toString())
           .emit('bookingCompleted', customerSocketPayload);
 
-        // 🔔 Socket Event 2: To Professional
-        const professionalSocketPayload = {
-          type: 'BOOKING_COMPLETED_CONFIRMATION',
-          requestId: updatedRequestHistory._id,
-          bookingId: updatedRequestHistory.booking._id,
-          customer: {
-            id: updatedRequestHistory.customer._id,
-            name: updatedRequestHistory.customer.name,
-          },
-          service: {
-            id: updatedRequestHistory.service._id,
-            title: updatedRequestHistory.service.title,
-          },
-          booking: {
-            date: updatedRequestHistory.booking.date,
-            amount: updatedRequestHistory.booking.amount,
-          },
-          status: 'completed',
-          message: 'Service marked as completed',
-          timestamp: new Date().toISOString(),
-        };
-
-        getIo()
-          .to(updatedRequestHistory.professional.user.toString())
-          .emit('bookingCompletedConfirmation', professionalSocketPayload);
-
-        console.log('✅ Completion notifications sent to both parties');
+        console.log(
+          '✅ Completion notifications sent to customer successfully',
+        );
       } catch (error) {
         console.error('❌ Error sending completion notification:', error);
       }
@@ -697,12 +579,10 @@ const completeRequest = async (requestId: string) => {
 
     return updatedRequestHistory || requestHistory;
   } catch (error) {
-    // ❌ Rollback on error
     await session.abortTransaction();
     console.error('❌ Completion transaction aborted:', error);
     throw error;
   } finally {
-    // 🧹 Cleanup
     session.endSession();
   }
 };

@@ -83,7 +83,8 @@ export const approveProfessionalController = catchAsync(async (req, res) => {
 
 export const blockUserController = catchAsync(async (req, res) => {
   const { userId } = req.params;
-  const result = await blockUserService(userId!);
+  const adminId = req.user.id;
+  const result = await blockUserService(userId!, adminId);
 
   sendResponse(res, {
     statusCode: 200,
@@ -94,7 +95,8 @@ export const blockUserController = catchAsync(async (req, res) => {
 });
 export const unBlockUserController = catchAsync(async (req, res) => {
   const { userId } = req.params;
-  const result = await unblockUserService(userId!);
+  const adminId = req.user.id;
+  const result = await unblockUserService(userId!, adminId);
 
   sendResponse(res, {
     statusCode: 200,
