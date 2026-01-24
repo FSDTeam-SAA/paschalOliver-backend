@@ -75,8 +75,6 @@ const notificationSchema = new Schema<INotificationDocument>(
   { timestamps: true },
 );
 
-notificationSchema.index({ reciverId: 1, isDeleted: 1, isRead: 1 });
-notificationSchema.index({ reciverId: 1, createdAt: -1 });
 
 export const Notification = model<INotificationDocument>(
   'Notification',
