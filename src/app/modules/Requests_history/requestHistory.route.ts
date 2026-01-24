@@ -39,4 +39,10 @@ router.patch(
   RequestHistoryControllers.rejectRequest,
 );
 
+router.patch(
+  '/complete/:id',
+  auth(userRole.professional),
+  RequestHistoryControllers.completeRequest,
+);
+
 export const RequestHistoryRoutes = router;

@@ -28,8 +28,11 @@ const getAllBookings = catchAsync(async (req, res) => {
 
 const cancelBooking = catchAsync(async (req, res) => {
   const userId = req.user.id;
-  const { id } = req.params;
-  const result = await BookingServices.cancelBooking(userId, id as string);
+  const { bookingId } = req.params;
+  const result = await BookingServices.cancelBooking(
+    userId,
+    bookingId as string,
+  );
 
   sendResponse(res, {
     statusCode: 200,

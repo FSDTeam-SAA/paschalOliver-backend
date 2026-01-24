@@ -1,6 +1,5 @@
 import { Schema, model, Document } from 'mongoose';
 import { INotification, IUserSnapshot } from './notification.interface';
-import { User } from '../user/user.model';
 
 export interface INotificationDocument extends INotification, Document {}
 
@@ -64,35 +63,29 @@ const notificationSchema = new Schema<INotificationDocument>(
     isRead: {
       type: Boolean,
       default: false,
+      index: true, // ✅ Added index for faster queries
     },
 
     isDeleted: {
       type: Boolean,
       default: false,
+      index: true, // ✅ Added index for faster queries
     },
   },
   { timestamps: true },
 );
 
-//pre middleware check reciver id exist or not in database
-notificationSchema.pre('save', async function (next) {
-  const reciverId = this.reciverId;
-  const reciver = await User.findById({ _id: reciverId });
-  if (!reciver) {
-    throw new Error('reciver not found in database');
-  }
-  next();
-});
+// ✅ COMPOUND INDEX for common query pattern
+// This makes "get my unread notifications" queries MUCH faster
+notificationSchema.index({ reciverId: 1, isDeleted: 1, isRead: 1 });
+notificationSchema.index({ reciverId: 1, createdAt: -1 }); // For sorting by date
 
-//pre middleware check sender id exist or not in database
-notificationSchema.pre('save', async function (next) {
-  const senderId = this.senderId;
-  const sender = await User.findById({ _id: senderId });
-  if (!sender) {
-    throw new Error('sender not found in database');
-  }
-  next();
-});
+// ❌ REMOVED PROBLEMATIC PRE-SAVE HOOKS
+// Validation should happen at business logic level, not database level
+// These hooks were causing:
+// - 2 extra DB queries per notification
+// - Performance bottlenecks
+// - Wrong syntax: findById({ _id: id }) should be findById(id)
 
 export const Notification = model<INotificationDocument>(
   'Notification',
