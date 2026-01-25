@@ -48,7 +48,7 @@ const getMyNotifications = async (userId: string): Promise<INotification[]> => {
 };
 
 const getUnreadCount = async (userId: string): Promise<number> => {
-  return Notification.countDocuments({
+  return await Notification.countDocuments({
     reciverId: userId,
     isDeleted: false,
     isRead: false,
