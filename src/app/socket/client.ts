@@ -56,6 +56,8 @@ socket.on('bookingAccepted', (data) => {
   console.log(message);
 });
 
+// TODO: check if this works
+
 socket.on('bookingRejected', (data) => {
   console.log('❌ BOOKING REJECTED');
   console.log({

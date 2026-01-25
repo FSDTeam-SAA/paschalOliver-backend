@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { NotificationService } from './notification.service';
+import sendResponse from '../../utils/sendResponse';
+import AppError from '../../error/appError';
 
 const getMyNotifications = async (req: Request, res: Response) => {
   const userId = req.user.id;
@@ -21,8 +23,10 @@ const markAsRead = async (req: Request, res: Response) => {
     userId,
   );
 
-  res.status(200).json({
+  sendResponse(res, {
+    statusCode: 200,
     success: true,
+    message: 'Notification marked as read successfully',
     data: result,
   });
 };
@@ -32,9 +36,26 @@ const markAllAsRead = async (req: Request, res: Response) => {
 
   await NotificationService.markAllAsRead(userId);
 
-  res.status(200).json({
+  sendResponse(res, {
+    statusCode: 200,
     success: true,
-    message: 'All notifications marked as read',
+    message: 'All notifications marked as read successfully',
+    data: null,
+  });
+};
+
+const getUnreadCount = async (req: Request, res: Response) => {
+  const result = await NotificationService.getUnreadCount(req.user.id);
+
+  if (!result) {
+    throw new AppError(404, 'Notification not found as unread');
+  }
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Unread count retrieved successfully',
+    data: result,
   });
 };
 
@@ -47,9 +68,24 @@ const deleteNotification = async (req: Request, res: Response) => {
     userId,
   );
 
-  res.status(200).json({
+  sendResponse(res, {
+    statusCode: 200,
     success: true,
-    message: 'Notification deleted',
+    message: 'Notification deleted successfully',
+    data: null,
+  });
+};
+
+const deleteAllNotifications = async (req: Request, res: Response) => {
+  const userId = req.user.id;
+
+  await NotificationService.deleteAllNotifications(userId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'All notifications deleted successfully',
+    data: null,
   });
 };
 
@@ -57,5 +93,7 @@ export const NotificationController = {
   getMyNotifications,
   markAsRead,
   markAllAsRead,
+  getUnreadCount,
   deleteNotification,
+  deleteAllNotifications,
 };
