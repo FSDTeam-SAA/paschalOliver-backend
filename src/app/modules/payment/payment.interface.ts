@@ -6,6 +6,7 @@ export interface IPayment {
   booking: Types.ObjectId;
 
   amount: number;
+  discountAmount?: number;
   adminFee: number;
   professionalAmount: number;
   currency: string;

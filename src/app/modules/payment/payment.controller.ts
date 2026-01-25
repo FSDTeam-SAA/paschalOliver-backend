@@ -9,7 +9,7 @@ import AppError from '../../error/appError';
 import { Booking } from '../booking/booking.model';
 
 const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
-  const { amount, professionalId, bookingId } = req.body;
+  const { amount, professionalId, bookingId, couponCode } = req.body;
   const userId = req.user.id;
 
   const result = await PaymentService.createPaymentIntent(
@@ -17,6 +17,7 @@ const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
     bookingId,
     professionalId,
     amount,
+    couponCode,
   );
 
   sendResponse(res, {

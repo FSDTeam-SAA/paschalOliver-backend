@@ -5,6 +5,7 @@ const createPaymentIntentValidation = z.object({
     amount: z.number().min(1),
     professionalId: z.string(),
     bookingId: z.string(),
+    couponCode: z.string().optional(),
   }),
 });
 

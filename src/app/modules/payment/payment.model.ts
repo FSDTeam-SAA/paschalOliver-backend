@@ -19,6 +19,7 @@ const paymentSchema = new Schema<IPayment>(
       required: true,
     },
     amount: { type: Number, required: true },
+    discountAmount: { type: Number, default: 0 },
     adminFee: { type: Number, required: true },
     professionalAmount: { type: Number, required: true },
     currency: { type: String, default: 'usd' },

@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { userRole } from './user.constant';
 
 export interface IUser {
@@ -19,4 +20,5 @@ export interface IUser {
   referralCode: string;
   referredBy?: string;
   walletBalance: number;
+  myCoupons: Types.ObjectId[];
 }

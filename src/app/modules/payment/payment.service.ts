@@ -3,6 +3,7 @@ import config from '../../config';
 import { Professional } from '../professional/professional.model';
 import { Payment } from './payment.model';
 import AppError from '../../error/appError';
+import { Coupon } from '../coupon/coupon.model';
 
 const stripe = new Stripe(config.stripe.secretKey as string, {
   apiVersion: '2025-12-15.clover' as any,
@@ -13,6 +14,7 @@ const createPaymentIntent = async (
   bookingId: string,
   professionalId: string,
   amount: number,
+  couponCode?: string,
 ) => {
   const professional = await Professional.findById(professionalId);
   if (!professional) {
@@ -23,6 +25,31 @@ const createPaymentIntent = async (
       400,
       'Professional has not set up their payment method yet.',
     );
+  }
+
+  let finalAmount = amount; // Start with original price
+  let discountAmount = 0;
+
+  if (couponCode) {
+    const coupon = await Coupon.findOne({
+      code: couponCode.toUpperCase(),
+      isActive: true,
+    });
+
+    if (coupon) {
+      if (new Date(coupon.expiryDate) < new Date()) {
+        throw new AppError(400, 'Coupon has expired');
+      }
+
+      if (coupon.discountType === 'percentage') {
+        discountAmount = (amount * coupon.discountValue) / 100;
+      } else {
+        discountAmount = coupon.discountValue;
+      }
+
+      finalAmount = amount - discountAmount;
+      if (finalAmount < 0) finalAmount = 0;
+    }
   }
 
   const amountInCents = Math.round(amount * 100);
@@ -41,6 +68,7 @@ const createPaymentIntent = async (
     metadata: {
       bookingId: bookingId,
       userId: userId,
+      couponCode: couponCode || '',
     },
   });
 
@@ -49,7 +77,8 @@ const createPaymentIntent = async (
     user: userId,
     booking: bookingId,
     professional: professionalId,
-    amount: amount,
+    amount: finalAmount,
+    discountAmount: discountAmount,
     adminFee: adminFeeInCents / 100,
     professionalAmount: professionalAmountInCents / 100,
     currency: 'usd',
@@ -59,6 +88,9 @@ const createPaymentIntent = async (
   return {
     clientSecret: paymentIntent.client_secret,
     transactionId: paymentIntent.id,
+    finalAmount: finalAmount,
+    originalAmount: amount,
+    discountApplied: discountAmount,
   };
 };
 

@@ -75,6 +75,12 @@ const userSchema = new Schema<IUser>(
       type: Number,
       default: 0,
     },
+    myCoupons: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Coupon',
+      },
+    ],
   },
   {
     timestamps: true,
