@@ -1,7 +1,7 @@
 import { io as socketIoClient, Socket } from 'socket.io-client';
 
 const SERVER_URL = 'http://localhost:5000';
-const USER_ID = '69680f25fda92b3c5a16e4ca';
+const USER_ID = '696e933456b77292177ba162';
 
 const socket: Socket = socketIoClient(SERVER_URL, {
   query: { userId: USER_ID },
