@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { NotificationService } from './notification.service';
 import sendResponse from '../../utils/sendResponse';
+import AppError from '../../error/appError';
 
 const getMyNotifications = async (req: Request, res: Response) => {
   const userId = req.user.id;
@@ -44,14 +45,10 @@ const markAllAsRead = async (req: Request, res: Response) => {
 };
 
 const getUnreadCount = async (req: Request, res: Response) => {
-  const result = await NotificationService.getUnreadCount;
+  const result = await NotificationService.getUnreadCount(req.user.id);
+
   if (!result) {
-    sendResponse(res, {
-      statusCode: 200,
-      success: true,
-      message: 'No notifications found',
-      data: result,
-    });
+    throw new AppError(404, 'Notification not found as unread');
   }
 
   sendResponse(res, {
