@@ -23,6 +23,16 @@ router.get(
   auth(userRole.client),
   ProfessionalControllers.getSingleProfessional,
 );
+router.post(
+  '/',
+  auth(userRole.professional),
+  fileUploader.upload.fields([
+    { name: 'documentFrontImage', maxCount: 1 },
+    { name: 'documentBackImage', maxCount: 1 },
+  ]),
+  validateRequest(ProfessionalValidations.createProfessionalValidationSchema),
+  ProfessionalControllers.createProfile,
+);
 router.patch(
   '/',
   auth(userRole.professional),

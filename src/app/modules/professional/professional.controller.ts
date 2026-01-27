@@ -5,6 +5,42 @@ import { fileUploader } from '../../helper/fileUploder';
 import { ProfessionalServices } from './professional.service';
 import AppError from '../../error/appError';
 
+const createProfile = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user.id;
+  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+  if (!files || !files.documentFrontImage || !files.documentFrontImage[0]) {
+    throw new AppError(400, 'Front ID image is required');
+  }
+  if (!files || !files.documentBackImage || !files.documentBackImage[0]) {
+    throw new AppError(400, 'Back ID image is required');
+  }
+  // Upload to Cloudinary
+  const frontImageResult = await fileUploader.uploadToCloudinary(
+    files.documentFrontImage[0],
+  );
+  const backImageResult = await fileUploader.uploadToCloudinary(
+    files.documentBackImage[0],
+  );
+
+  // Attach URLs to Body
+  req.body.identity = req.body.identity || {};
+  req.body.identity.documentFrontImage = frontImageResult?.url;
+  req.body.identity.documentBackImage = backImageResult?.url;
+
+  const result = await ProfessionalServices.createProfessionalProfile(
+    userId,
+    req.body,
+  );
+
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: 'Professional profile created successfully',
+    data: result,
+  });
+});
+
 const updateProfile = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -86,6 +122,7 @@ const searchBySubcategory = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const ProfessionalControllers = {
+  createProfile,
   updateProfile,
   getProfile,
   getSingleProfessional,

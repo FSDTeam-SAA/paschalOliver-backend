@@ -4,6 +4,19 @@ import AppError from '../../error/appError';
 import { Listing } from '../listing/listing.model';
 import { Address } from '../address/address.model';
 
+const createProfessionalProfile = async (
+  userId: string,
+  payload: IProfessional,
+) => {
+  const isExist = await Professional.findOne({ user: userId });
+  if (isExist) {
+    throw new AppError(409, 'Professional profile already exists');
+  }
+  payload.user = userId as any;
+  const result = await Professional.create(payload);
+  return result;
+};
+
 const updateProfessionalProfile = async (
   userId: string,
   payload: Partial<IProfessional>,
@@ -24,7 +37,6 @@ const getProfile = async (userId: string) => {
   const result = await Professional.findOne({ user: userId }).populate('user');
   return result;
 };
-
 
 const getSingleProfessional = async (id: string) => {
   const professional = await Professional.findById(id)
@@ -77,6 +89,7 @@ const searchBySubcategory = async (subcategoryId: string, userId: string) => {
 };
 
 export const ProfessionalServices = {
+  createProfessionalProfile,
   updateProfessionalProfile,
   getProfile,
   getSingleProfessional,
