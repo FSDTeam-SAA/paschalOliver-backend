@@ -136,7 +136,7 @@ const forgotPassword = async (email: string) => {
   const user = await User.findOne({ email });
   if (!user) throw new AppError(401, 'User not found');
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
   user.otp = otp;
   user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
