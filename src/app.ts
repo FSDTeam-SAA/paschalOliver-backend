@@ -29,7 +29,7 @@ app.use('/api/v1', router);
 
 // Root router
 app.get('/', (req: Request, res: Response) => {
-  res.status(200).json({ message: 'Welcome to the server' });
+  res.status(200).json({ message: 'Welcome to the from monir' });
 });
 
 // Not found route
