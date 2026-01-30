@@ -29,7 +29,7 @@ app.use('/api/v1', router);
 
 // Root router
 app.get('/', (req: Request, res: Response) => {
-  res.status(200).json({ message: 'Welcome to the server' });
+  res.status(200).send(`<h1>API is running successfully </h1>`);
 });
 
 // Not found route
