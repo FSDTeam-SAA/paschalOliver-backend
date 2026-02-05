@@ -61,4 +61,11 @@ router.put(
   ListingControllers.updateProfileDetails,
 );
 
+router.put(
+  '/about',
+  auth(userRole.professional),
+  validateRequest(ListingValidations.updateAboutValidationSchema),
+  ListingControllers.updateAboutMe,
+);
+
 export const ListingRoutes = router;

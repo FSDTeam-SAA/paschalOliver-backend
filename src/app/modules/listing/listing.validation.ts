@@ -20,7 +20,14 @@ const updateListingValidationSchema = z.object({
   }),
 });
 
+const updateAboutValidationSchema = z.object({
+  body: z.object({
+    about: z.string(),
+  }),
+});
+
 export const ListingValidations = {
   createListingValidationSchema,
   updateListingValidationSchema,
+  updateAboutValidationSchema,
 };

@@ -115,6 +115,20 @@ const removeFromGallery = catchAsync(async (req, res) => {
   });
 });
 
+const updateAboutMe = catchAsync(async (req, res) => {
+  const { about } = req.body;
+  const userId = req.user.id;
+
+  const result = await ListingServices.updateAboutMe(userId, about);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'About me updated successfully',
+    data: result,
+  });
+});
+
 export const ListingControllers = {
   createListing,
   getMyListings,
@@ -124,4 +138,5 @@ export const ListingControllers = {
   addToGallery,
   getGallery,
   removeFromGallery,
+  updateAboutMe,
 };

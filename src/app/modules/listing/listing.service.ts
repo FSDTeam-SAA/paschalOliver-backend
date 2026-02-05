@@ -3,6 +3,7 @@ import { IListing } from './listing.interface';
 import { Listing } from './listing.model';
 import AppError from '../../error/appError';
 import { Service } from '../services/service.model';
+import { User } from '../user/user.model';
 
 const createListing = async (userId: string, payload: IListing) => {
   const professional = await Professional.findOne({ user: userId });
@@ -70,7 +71,7 @@ const updateProfileDetails = async (userId: string, payload: any) => {
   if (!result) {
     throw new AppError(404, 'Professional Profile not found');
   }
-  return result;
+  return result.profileDetails as string;
 };
 
 const addToGallery = async (userId: string, imageUrls: string[]) => {
@@ -111,6 +112,20 @@ const removeFromGallery = async (userId: string, imageToRemove: string) => {
   return result.gallery;
 };
 
+const updateAboutMe = async (userId: string, about: string) => {
+  const result = await User.findByIdAndUpdate(
+    userId,
+    { about },
+    { new: true, runValidators: true },
+  );
+
+  if (!result) {
+    throw new AppError(404, 'User not found');
+  }
+
+  return result.about as string;
+};
+
 export const ListingServices = {
   createListing,
   getMyListings,
@@ -120,4 +135,5 @@ export const ListingServices = {
   addToGallery,
   getGallery,
   removeFromGallery,
+  updateAboutMe,
 };
