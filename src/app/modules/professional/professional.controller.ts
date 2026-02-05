@@ -6,7 +6,8 @@ import { ProfessionalServices } from './professional.service';
 import AppError from '../../error/appError';
 
 const createProfile = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  //const userId = req.user.id;
+  const { userId } = req.body;
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
   if (!files || !files.documentFrontImage || !files.documentFrontImage[0]) {

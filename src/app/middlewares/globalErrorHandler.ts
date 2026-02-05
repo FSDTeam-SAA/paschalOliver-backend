@@ -12,7 +12,7 @@ import AppError from '../error/appError';
 
 const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   // console.error the full error object for better debugging
-  // console.error('Global Error Handler:', err);
+  console.error('Global Error Handler:', err);
 
   //setting default values
   let statusCode = 500;
