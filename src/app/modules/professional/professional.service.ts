@@ -88,10 +88,27 @@ const searchBySubcategory = async (subcategoryId: string, userId: string) => {
   return result;
 };
 
+const updateProfessionalStatus = async (id: string, status: string) => {
+  const professional = await Professional.findById(id);
+
+  if (!professional) {
+    throw new AppError(404, 'Professional not found');
+  }
+
+  const result = await Professional.findByIdAndUpdate(
+    id,
+    { status },
+    { new: true },
+  );
+
+  return result;
+};
+
 export const ProfessionalServices = {
   createProfessionalProfile,
   updateProfessionalProfile,
   getProfile,
   getSingleProfessional,
   searchBySubcategory,
+  updateProfessionalStatus,
 };

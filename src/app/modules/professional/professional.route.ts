@@ -43,4 +43,13 @@ router.patch(
   ProfessionalControllers.updateProfile,
 );
 
+router.patch(
+  '/update-status',
+  auth(userRole.admin),
+  validateRequest(
+    ProfessionalValidations.updateProfessionalStatusValidationSchema,
+  ),
+  ProfessionalControllers.updateProfessionalStatus,
+);
+
 export const ProfessionalRoutes = router;

@@ -128,7 +128,15 @@ const updateProfessionalValidationSchema = z.object({
   }),
 });
 
+const updateProfessionalStatusValidationSchema = z.object({
+  body: z.object({
+    professionalId: z.string(),
+    status: z.enum(['approved', 'rejected', 'pending']),
+  }),
+});
+
 export const ProfessionalValidations = {
   createProfessionalValidationSchema,
   updateProfessionalValidationSchema,
+  updateProfessionalStatusValidationSchema,
 };

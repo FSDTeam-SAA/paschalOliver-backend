@@ -122,10 +122,28 @@ const searchBySubcategory = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateProfessionalStatus = catchAsync(
+  async (req: Request, res: Response) => {
+    const { professionalId, status } = req.body;
+
+    const result = await ProfessionalServices.updateProfessionalStatus(
+      professionalId,
+      status,
+    );
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: `Professional status updated to ${status} successfully`,
+    });
+  },
+);
+
 export const ProfessionalControllers = {
   createProfile,
   updateProfile,
   getProfile,
   getSingleProfessional,
   searchBySubcategory,
+  updateProfessionalStatus,
 };
