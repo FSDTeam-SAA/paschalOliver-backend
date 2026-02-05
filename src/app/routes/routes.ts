@@ -17,6 +17,7 @@ import { CommentRoutes } from '../modules/comments/comment.route';
 import { AdminRoutes } from '../modules/admin/admin.route';
 import { PaymentRoutes } from '../modules/payment/payment.route';
 import { NotificationRoutes } from '../modules/notification/notification.route';
+import { CouponRoutes } from '../modules/coupon/coupon.route';
 
 const router = Router();
 
@@ -92,6 +93,10 @@ const moduleRoutes = [
   {
     path: '/notification',
     route: NotificationRoutes,
+  },
+  {
+    path: '/coupon',
+    route: CouponRoutes,
   },
 ];
 

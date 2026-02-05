@@ -15,7 +15,7 @@ const createCoupon = catchAsync(async (req: Request, res: Response) => {
 });
 
 const applyCouponToUser = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user.userId;
+  const userId = req.user.id;
   const { code } = req.body;
   const result = await CouponServices.applyCouponToUser(userId, code);
 
@@ -28,7 +28,7 @@ const applyCouponToUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getMyCoupons = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user.userId;
+  const userId = req.user.id;
   const result = await CouponServices.getMyCoupons(userId);
 
   sendResponse(res, {

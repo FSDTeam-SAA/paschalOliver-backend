@@ -1,5 +1,3 @@
-import { Model } from 'mongoose';
-
 export interface ICoupon {
   code: string;
   discountValue: number;
