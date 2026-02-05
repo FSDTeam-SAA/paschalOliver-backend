@@ -40,11 +40,6 @@ export interface IDaySchedule {
 // information of interest
 export interface IProfileDetails {
   experienceLevel?: string;
-  cleaningTypes?: string[];
-  additionalTasks?: string[];
-
-  // Screen: Status & Situation
-  isPetFriendly?: boolean;
   hasIndustryExperience?: boolean;
   employmentStatus?: string;
   currentSituation?: string;

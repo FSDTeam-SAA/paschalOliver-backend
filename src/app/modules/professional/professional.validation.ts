@@ -99,10 +99,7 @@ const updateProfessionalValidationSchema = z.object({
     profileDetails: z
       .object({
         experienceLevel: z.string().optional(),
-        cleaningTypes: z.array(z.string()).optional(),
-        additionalTasks: z.array(z.string()).optional(),
-        isPetFriendly: z.boolean().optional(),
-        hasIndustryExperience: z.boolean().optional(),
+        hasIndustryExperience: z.coerce.boolean().optional(),
         employmentStatus: z.string().optional(),
         currentSituation: z.string().optional(),
       })

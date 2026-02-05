@@ -4,9 +4,6 @@ import { IProfessional, IProfileDetails } from './professional.interface';
 const profileDetailsSchema = new Schema<IProfileDetails>(
   {
     experienceLevel: { type: String },
-    cleaningTypes: { type: [String], default: [] },
-    additionalTasks: { type: [String], default: [] },
-    isPetFriendly: { type: Boolean },
     hasIndustryExperience: { type: Boolean },
     employmentStatus: { type: String },
     currentSituation: { type: String },
