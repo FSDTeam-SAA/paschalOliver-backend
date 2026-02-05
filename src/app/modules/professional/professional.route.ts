@@ -25,7 +25,6 @@ router.get(
 );
 router.post(
   '/',
-  auth(userRole.professional),
   fileUploader.upload.fields([
     { name: 'documentFrontImage', maxCount: 1 },
     { name: 'documentBackImage', maxCount: 1 },
