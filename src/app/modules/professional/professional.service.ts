@@ -52,14 +52,8 @@ const getSingleProfessional = async (id: string) => {
     throw new AppError(404, 'Professional not found');
   }
 
-  const listings = await Listing.find({ professional: professional._id })
-    .populate('service', 'title')
-    .select('service selectedOptions')
-    .lean(); // Convert to plain JS object for better performance
-
   return {
     professional,
-    listings,
   };
 };
 
