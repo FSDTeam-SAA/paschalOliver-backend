@@ -5,7 +5,24 @@ import sendResponse from '../../utils/sendResponse';
 import { ListingServices } from './listing.service';
 
 const createListing = catchAsync(async (req, res) => {
-  const result = await ListingServices.createListing(req.user.id, req.body);
+  const userId = req.user.id;
+  let gallery: string[] = [];
+
+  if (req.files && (req.files as Express.Multer.File[]).length > 0) {
+    const imageFiles = req.files as Express.Multer.File[];
+    const uploadPromises = imageFiles.map(async (file) => {
+      const { url } = await fileUploader.uploadToCloudinary(file);
+      return url;
+    });
+    gallery = await Promise.all(uploadPromises);
+  }
+
+  const servicePayload = {
+    ...req.body,
+    gallery,
+  };
+
+  const result = await ListingServices.createListing(userId, servicePayload);
 
   sendResponse(res, {
     statusCode: 201,
@@ -115,20 +132,6 @@ const removeFromGallery = catchAsync(async (req, res) => {
   });
 });
 
-const updateAboutMe = catchAsync(async (req, res) => {
-  const { about } = req.body;
-  const userId = req.user.id;
-
-  const result = await ListingServices.updateAboutMe(userId, about);
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'About me updated successfully',
-    data: result,
-  });
-});
-
 export const ListingControllers = {
   createListing,
   getMyListings,
@@ -138,5 +141,4 @@ export const ListingControllers = {
   addToGallery,
   getGallery,
   removeFromGallery,
-  updateAboutMe,
 };

@@ -2,14 +2,6 @@ import { Types } from 'mongoose';
 
 export interface IListing {
   professional: Types.ObjectId;
-
-  // category: Types.ObjectId;
-  subcategory: Types.ObjectId;
-  service: Types.ObjectId;
-
-  selectedOptions: string[];
+  subcategories: Types.ObjectId[];
   price: number;
-  isDiscountOffered: boolean;
-  discountPercentage: number;
-  isActive: boolean;
 }

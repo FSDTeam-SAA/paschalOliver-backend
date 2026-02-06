@@ -9,50 +9,17 @@ const listingSchema = new Schema<IListing>(
       ref: 'Professional',
       required: true,
     },
-    // category: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'Category',
-    //   required: true,
-    // },
-    subcategory: {
-      type: Schema.Types.ObjectId,
-      ref: 'Subcategory',
-      required: true,
-    },
-    service: {
-      type: Schema.Types.ObjectId,
-      ref: 'Service',
-      required: true,
-    },
-    selectedOptions: {
-      type: [String],
-      required: true,
-      validate: {
-        validator: function (v: string[]) {
-          return v && v.length > 0;
-        },
-        message: 'You must select at least one option.',
+    subcategories: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Subcategory',
+        required: true,
       },
-    },
+    ],
     price: {
       type: Number,
       required: true,
       min: 0,
-    },
-    isDiscountOffered: {
-      type: Boolean,
-      default: false,
-    },
-    discountPercentage: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 100,
-    },
-
-    isActive: {
-      type: Boolean,
-      default: true,
     },
   },
   {
@@ -60,21 +27,24 @@ const listingSchema = new Schema<IListing>(
   },
 );
 
-// Prevent duplicate listings for the same service by the same professional
-listingSchema.index({ professional: 1, service: 1 }, { unique: true });
+// Prevent duplicate listings for the same subcategory by the same professional
+listingSchema.index({ professional: 1, subcategories: 1 }, { unique: true });
 
 // Check for duplicates before save
 listingSchema.pre('save', async function (next) {
-  const isExist = await Listing.findOne({
-    professional: this.professional,
-    service: this.service,
-  });
+  if (this.isNew || this.isModified('subcategories')) {
+    const isExist = await Listing.findOne({
+      professional: this.professional,
+      _id: { $ne: this._id },
+      subcategories: { $in: this.subcategories },
+    });
 
-  if (isExist) {
-    throw new AppError(
-      409,
-      'You have already created a listing for this service.',
-    );
+    if (isExist) {
+      throw new AppError(
+        409,
+        'One or more selected subcategories are already listed in your other listings.',
+      );
+    }
   }
   next();
 });

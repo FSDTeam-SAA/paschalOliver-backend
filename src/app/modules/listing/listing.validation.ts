@@ -2,11 +2,20 @@ import { z } from 'zod';
 
 const createListingValidationSchema = z.object({
   body: z.object({
-    service: z.string(),
-    selectedOptions: z.array(z.string()).min(1),
+    subcategories: z.array(z.string()),
     price: z.number().min(0),
-    isDiscountOffered: z.boolean().optional(),
-    discountPercentage: z.number().min(0).max(100).optional(),
+
+    about: z.string().optional(),
+    gallery: z.array(z.string()).optional(),
+
+    profileDetails: z
+      .object({
+        experienceLevel: z.string().optional(),
+        hasIndustryExperience: z.boolean().optional(),
+        employmentStatus: z.string().optional(),
+        currentSituation: z.string().optional(),
+      })
+      .optional(),
   }),
 });
 

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import { ListingControllers } from './listing.controller';
 import validateRequest from '../../middlewares/validateRequest';
 import { ListingValidations } from './listing.validation';
@@ -31,6 +31,13 @@ router.delete(
 router.post(
   '/',
   auth(userRole.professional),
+  fileUploader.upload.array('gallery'),
+  (req: Request, res: Response, next: NextFunction) => {
+    if (req.body.data) {
+      req.body = JSON.parse(req.body.data);
+    }
+    next();
+  },
   validateRequest(ListingValidations.createListingValidationSchema),
   ListingControllers.createListing,
 );
@@ -59,13 +66,6 @@ router.put(
   auth(userRole.professional),
   validateRequest(ProfessionalValidations.updateProfessionalValidationSchema),
   ListingControllers.updateProfileDetails,
-);
-
-router.put(
-  '/about',
-  auth(userRole.professional),
-  validateRequest(ListingValidations.updateAboutValidationSchema),
-  ListingControllers.updateAboutMe,
 );
 
 export const ListingRoutes = router;

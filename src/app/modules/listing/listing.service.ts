@@ -2,24 +2,76 @@ import { Professional } from '../professional/professional.model';
 import { IListing } from './listing.interface';
 import { Listing } from './listing.model';
 import AppError from '../../error/appError';
-import { Service } from '../services/service.model';
 import { User } from '../user/user.model';
+import { IProfileDetails } from '../professional/professional.interface';
+import { Subcategory } from '../subcategory/subcategory.model';
 
-const createListing = async (userId: string, payload: IListing) => {
+interface ICreateListingPayload extends IListing {
+  gallery?: string[];
+  about?: string;
+  profileDetails?: IProfileDetails;
+}
+
+const createListing = async (
+  userId: string,
+  payload: ICreateListingPayload,
+) => {
   const professional = await Professional.findOne({ user: userId });
   if (!professional) {
-    throw new AppError(404, 'Professional profile not found');
+    throw new AppError(
+      404,
+      'Professional profile not found. Please complete your profile first.',
+    );
   }
 
-  const serviceData = await Service.findById(payload.service);
-  if (!serviceData) {
-    throw new AppError(404, 'Service not found');
+  // Verify all Subcategories exist
+  if (payload.subcategories && payload.subcategories.length > 0) {
+    const count = await Subcategory.countDocuments({
+      _id: { $in: payload.subcategories },
+    });
+
+    if (count !== payload.subcategories.length) {
+      throw new AppError(404, 'One or more subcategories do not exist');
+    }
   }
 
-  payload.professional = professional._id;
-  payload.subcategory = serviceData.subCategoryId;
-  const listing = await Listing.create(payload);
-  const result = await listing.populate('subcategory', 'title');
+  const { gallery, about, profileDetails, ...listingData } = payload;
+
+  listingData.professional = professional._id;
+  const result = await Listing.create(listingData);
+
+  if (profileDetails) {
+    await Professional.findByIdAndUpdate(
+      professional._id,
+      {
+        $set: { profileDetails: profileDetails },
+      },
+      { new: true, runValidators: true },
+    );
+  }
+
+  if (gallery && gallery.length > 0) {
+    await Professional.findByIdAndUpdate(
+      professional._id,
+      {
+        $addToSet: { gallery: { $each: gallery } },
+      },
+      { new: true },
+    );
+  }
+
+  if (about) {
+    const userUpdate = await User.findByIdAndUpdate(
+      userId,
+      { about },
+      { new: true, runValidators: true },
+    );
+
+    if (!userUpdate) {
+      throw new AppError(404, 'User not found');
+    }
+  }
+
   return result;
 };
 
@@ -112,20 +164,6 @@ const removeFromGallery = async (userId: string, imageToRemove: string) => {
   return result.gallery;
 };
 
-const updateAboutMe = async (userId: string, about: string) => {
-  const result = await User.findByIdAndUpdate(
-    userId,
-    { about },
-    { new: true, runValidators: true },
-  );
-
-  if (!result) {
-    throw new AppError(404, 'User not found');
-  }
-
-  return result.about as string;
-};
-
 export const ListingServices = {
   createListing,
   getMyListings,
@@ -135,5 +173,4 @@ export const ListingServices = {
   addToGallery,
   getGallery,
   removeFromGallery,
-  updateAboutMe,
 };
