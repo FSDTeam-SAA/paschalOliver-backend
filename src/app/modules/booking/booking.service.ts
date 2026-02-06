@@ -58,10 +58,10 @@ const createBooking = async (userId: string, payload: IBooking) => {
     const durationInHours = durationInMinutes / 60;
     let amount = listing.price * durationInHours;
 
-    if (listing.isDiscountOffered && listing.discountPercentage > 0) {
-      const discountAmount = (amount * listing.discountPercentage) / 100;
-      amount = amount - discountAmount;
-    }
+    // if (listing.isDiscountOffered && listing.discountPercentage > 0) {
+    //   const discountAmount = (amount * listing.discountPercentage) / 100;
+    //   amount = amount - discountAmount;
+    // }
 
     // Create booking
     const result = await Booking.create(
