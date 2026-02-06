@@ -1,6 +1,7 @@
 import { Favorite } from './favorite.model';
 import { Professional } from '../professional/professional.model';
 import AppError from '../../error/appError';
+import mongoose from 'mongoose';
 
 const toggleFavorite = async (
   userId: string,
@@ -32,36 +33,130 @@ const toggleFavorite = async (
 };
 
 const getMyFavorites = async (userId: string) => {
-  const favorites = await Favorite.find({ user: userId })
-    .populate({
-      path: 'professional',
-      select: 'user',
-      populate: {
-        path: 'user',
-        select: 'name image',
+  const result = await Favorite.aggregate([
+    // 1. Match Favorites for the User
+    {
+      $match: { user: new mongoose.Types.ObjectId(userId) },
+    },
+
+    // 2. Lookup Subcategory (Get Title & Image)
+    {
+      $lookup: {
+        from: 'subcategories', // DB collection name
+        localField: 'subcategory',
+        foreignField: '_id',
+        as: 'subcategoryDetails',
       },
-    })
-    .populate({
-      path: 'subcategory',
-      select: 'title',
-    });
+    },
+    { $unwind: '$subcategoryDetails' },
 
-  // Grouping Logic
-  const groupedResult = favorites.reduce((acc: any, curr: any) => {
-    const groupName = curr.subcategory?.title || 'Other';
+    // 3. Lookup Professional (Get Gallery & User ref)
+    {
+      $lookup: {
+        from: 'professionals',
+        localField: 'professional',
+        foreignField: '_id',
+        as: 'proDetails',
+      },
+    },
+    { $unwind: '$proDetails' },
 
-    if (!acc[groupName]) {
-      acc[groupName] = [];
-    }
+    // 4. Lookup User (Get Name & Profile Image)
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'proDetails.user',
+        foreignField: '_id',
+        as: 'userDetails',
+      },
+    },
+    { $unwind: '$userDetails' },
 
-    if (curr.professional) {
-      acc[groupName].push(curr.professional);
-    }
+    // 5. Lookup Listing (Get Price)
+    {
+      $lookup: {
+        from: 'listings',
+        let: { proId: '$professional', subId: '$subcategory' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$professional', '$$proId'] },
+                  { $in: ['$$subId', '$subcategories'] },
+                ],
+              },
+            },
+          },
+          { $project: { price: 1 } },
+        ],
+        as: 'listingDetails',
+      },
+    },
+    {
+      $unwind: {
+        path: '$listingDetails',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
 
-    return acc;
-  }, {});
+    // 6. Lookup Comments (Get Rating & Count)
+    {
+      $lookup: {
+        from: 'comments',
+        let: { proId: '$professional' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$professionalId', '$$proId'] } } },
+          {
+            $group: {
+              _id: null,
+              avgRating: { $avg: '$rating' },
+              totalReviews: { $sum: 1 },
+            },
+          },
+        ],
+        as: 'reviewStats',
+      },
+    },
+    {
+      $unwind: {
+        path: '$reviewStats',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
 
-  return groupedResult;
+    // 7. Group by Subcategory Title
+    {
+      $group: {
+        _id: '$subcategoryDetails.title',
+        subcategoryImage: { $first: '$subcategoryDetails.image' },
+        items: {
+          $push: {
+            _id: '$proDetails._id',
+            name: '$userDetails.name',
+            image: '$userDetails.image',
+            gallery: '$proDetails.gallery',
+            price: { $ifNull: ['$listingDetails.price', 0] },
+            rating: { $ifNull: ['$reviewStats.avgRating', 0] },
+            reviewCount: { $ifNull: ['$reviewStats.totalReviews', 0] },
+          },
+        },
+      },
+    },
+
+    // 8. Reformat Output
+    {
+      $project: {
+        subcategory: '$_id',
+        image: '$subcategoryImage',
+        count: { $size: '$items' },
+        professionals: '$items',
+        _id: 0,
+      },
+    },
+  ]);
+
+  return result;
 };
 
 export const FavoriteServices = {
