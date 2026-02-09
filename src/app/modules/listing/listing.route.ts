@@ -10,22 +10,22 @@ import { fileUploader } from '../../helper/fileUploder';
 const router = express.Router();
 
 // Gallery Routes
-router.post(
-  '/gallery',
-  auth(userRole.professional),
-  fileUploader.upload.array('gallery'),
-  ListingControllers.addToGallery,
-);
-router.get(
-  '/gallery',
-  auth(userRole.professional),
-  ListingControllers.getGallery,
-);
-router.delete(
-  '/gallery',
-  auth(userRole.professional),
-  ListingControllers.removeFromGallery,
-);
+// router.post(
+//   '/gallery',
+//   auth(userRole.professional),
+//   fileUploader.upload.array('gallery'),
+//   ListingControllers.addToGallery,
+// );
+// router.get(
+//   '/gallery',
+//   auth(userRole.professional),
+//   ListingControllers.getGallery,
+// );
+// router.delete(
+//   '/gallery',
+//   auth(userRole.professional),
+//   ListingControllers.removeFromGallery,
+// );
 
 // listing routes
 router.post(
@@ -42,18 +42,24 @@ router.post(
   ListingControllers.createListing,
 );
 
+router.post(
+  '/add-new-listing',
+  auth(userRole.professional),
+  ListingControllers.addNewListing,
+);
+
 router.get(
   '/my-listings',
   auth(userRole.professional),
   ListingControllers.getMyListings,
 );
 
-router.patch(
-  '/:id',
-  auth(userRole.professional),
-  validateRequest(ListingValidations.updateListingValidationSchema),
-  ListingControllers.updateListing,
-);
+// router.patch(
+//   '/:id',
+//   auth(userRole.professional),
+//   validateRequest(ListingValidations.updateListingValidationSchema),
+//   ListingControllers.updateListing,
+// );
 
 router.delete(
   '/:id',

@@ -2,6 +2,6 @@ import { Types } from 'mongoose';
 
 export interface IListing {
   professional: Types.ObjectId;
-  subcategories: Types.ObjectId[];
+  subcategory: Types.ObjectId;
   price: number;
 }

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const createListingValidationSchema = z.object({
   body: z.object({
-    subcategories: z.array(z.string()),
+    subcategory: z.string(),
     price: z.number().min(0),
 
     about: z.string().optional(),
