@@ -1,60 +1,48 @@
 import { Request, Response } from 'express';
 import { CategoryServices } from './category.service';
+import catchAsync from '../../utils/catchAsync';
+import sendResponse from '../../utils/sendResponse';
+import httpStatus from 'http-status';
+import { fileUploader } from '../../helper/fileUploder';
 
-const createCategory = async (req: Request, res: Response) => {
-  try {
-    const result = await CategoryServices.createCategoryIntoDB(req.body);
-
-    res.status(200).json({
-      success: true,
-      message: 'Category created successfully',
-      data: result,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create category',
-      error: err,
-    });
+const createCategory = catchAsync(async (req: Request, res: Response) => {
+  if (req.file) {
+    const { url } = await fileUploader.uploadToCloudinary(req.file);
+    req.body.image = url;
   }
-};
 
-const getAllCategories = async (req: Request, res: Response) => {
-  try {
-    const result = await CategoryServices.getAllCategoriesFromDB();
+  const result = await CategoryServices.createCategory(req.body);
 
-    res.status(200).json({
-      success: true,
-      message: 'Categories retrieved successfully',
-      data: result,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve categories',
-      error: err,
-    });
-  }
-};
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Category created successfully',
+    data: result,
+  });
+});
 
-const deleteCategory = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const result = await CategoryServices.deleteCategoryFromDB(id as string);
+const getAllCategories = catchAsync(async (req: Request, res: Response) => {
+  const result = await CategoryServices.getAllCategories();
 
-    res.status(200).json({
-      success: true,
-      message: 'Category deleted successfully',
-      data: result,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete category',
-      error: err,
-    });
-  }
-};
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Categories retrieved successfully',
+    data: result,
+  });
+});
+
+const deleteCategory = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await CategoryServices.deleteCategory(id as string);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Category deleted successfully',
+    data: result,
+  });
+});
 
 export const CategoryControllers = {
   createCategory,

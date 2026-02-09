@@ -1,83 +1,64 @@
 import { Request, Response } from 'express';
 import { SubcategoryServices } from './subcategory.service';
+import httpStatus from 'http-status';
+import catchAsync from '../../utils/catchAsync';
+import { fileUploader } from '../../helper/fileUploder';
+import sendResponse from '../../utils/sendResponse';
 
-const createSubcategory = async (req: Request, res: Response) => {
-  try {
-    const result = await SubcategoryServices.createSubcategoryIntoDB(req.body);
-
-    res.status(200).json({
-      success: true,
-      message: 'Subcategory created successfully',
-      data: result,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create subcategory',
-      error: err,
-    });
+const createSubcategory = catchAsync(async (req: Request, res: Response) => {
+  if (req.file) {
+    const { url } = await fileUploader.uploadToCloudinary(req.file);
+    req.body.image = url;
   }
-};
 
-const getAllSubcategories = async (req: Request, res: Response) => {
-  try {
-    const result = await SubcategoryServices.getAllSubcategoriesFromDB();
+  const result = await SubcategoryServices.createSubcategory(req.body);
 
-    res.status(200).json({
-      success: true,
-      message: 'Subcategories retrieved successfully',
-      data: result,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve subcategories',
-      error: err,
-    });
-  }
-};
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Subcategory created successfully',
+    data: result,
+  });
+});
 
-const getSubcategoriesByCategoryId = async (req: Request, res: Response) => {
-  try {
+const getAllSubcategories = catchAsync(async (req: Request, res: Response) => {
+  const result = await SubcategoryServices.getAllSubcategories();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Subcategories retrieved successfully',
+    data: result,
+  });
+});
+
+const getSubcategoriesByCategoryId = catchAsync(
+  async (req: Request, res: Response) => {
     const { categoryId } = req.params;
-    const result = await SubcategoryServices.getSubcategoriesByCategoryIdFromDB(
+    const result = await SubcategoryServices.getSubcategoriesByCategoryId(
       categoryId as string,
     );
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
       success: true,
       message: 'Subcategories retrieved successfully',
       data: result,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve subcategories',
-      error: err,
-    });
-  }
-};
+  },
+);
 
-const deleteSubcategory = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const result = await SubcategoryServices.deleteSubcategoryFromDB(
-      id as string,
-    );
+const deleteSubcategory = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await SubcategoryServices.deleteSubcategory(id as string);
 
-    res.status(200).json({
-      success: true,
-      message: 'Subcategory deleted successfully',
-      data: result,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete subcategory',
-      error: err,
-    });
-  }
-};
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Subcategory deleted successfully',
+    data: result,
+  });
+});
 
 export const SubcategoryControllers = {
   createSubcategory,

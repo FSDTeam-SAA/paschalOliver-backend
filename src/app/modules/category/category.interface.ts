@@ -1,5 +1,5 @@
 export interface ICategory {
   title: string;
-  image: string; // URL to the icon/image
+  image: string;
   isActive: boolean;
 }
