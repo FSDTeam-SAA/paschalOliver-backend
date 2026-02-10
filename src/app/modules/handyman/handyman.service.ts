@@ -3,6 +3,7 @@ import AppError from '../../error/appError';
 import { Types } from 'mongoose';
 import { IHandymanRequest } from './handyman.interface';
 import Handyman from './handyman.model';
+import { Professional } from '../professional/professional.model';
 
 const validateSchedule = (payload: Partial<IHandymanRequest>) => {
   const s = payload.schedule;
@@ -189,6 +190,23 @@ const professionalUpdateStatus = async (
   return reqDoc;
 };
 
+const searchProfessionalSubCategoryBased = async(options:IOption) => {
+    
+    const { page, limit, skip, sortBy, sortOrder } = pagination(options);
+  
+    const result = await Professional.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ [sortBy]: sortOrder } as any);
+  
+    const total = await Professional.countDocuments();
+  
+    return {
+      data: result,
+      meta: { total, page, limit },
+    };
+}
+
 export const handymanService = {
   createHandymanRequest,
   getMyHandymanRequests,
@@ -198,4 +216,5 @@ export const handymanService = {
 
   getProfessionalInbox,
   professionalUpdateStatus,
+  searchProfessionalSubCategoryBased
 };

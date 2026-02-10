@@ -23,6 +23,9 @@ const updateProfessionalProfile = async (
   userId: string,
   payload: Partial<IProfessional>,
 ) => {
+
+  
+
   const result = await Professional.findOneAndUpdate(
     { user: userId },
     payload,
@@ -102,10 +105,10 @@ const updateProfessionalStatus = async (id: string, status: string) => {
   return result;
 };
 
-const getAllProfessionalAccount = async(options: IOption) => {
+const getAllProfessionalAccount = async(options: IOption, subCategory:string) => {
 
     const { page, limit, skip, sortBy, sortOrder } = pagination(options);
-  
+
     const result = await Professional.find()
       .skip(skip)
       .limit(limit)

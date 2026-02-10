@@ -6,7 +6,7 @@ const profileDetailsSchema = new Schema<IProfileDetails>(
     experienceLevel: { type: String },
     hasIndustryExperience: { type: Boolean },
     employmentStatus: { type: String },
-    currentSituation: { type: String },
+    currentSituation: { type: String }
   },
   {
     _id: false, // Prevents creating a separate id for this sub-document
@@ -82,6 +82,7 @@ const professionalSchema = new Schema<IProfessional>(
       type: profileDetailsSchema,
       default: {},
     },
+    workingSkills:[{type:String}],
     gallery: {
       type: [String],
       default: [],
