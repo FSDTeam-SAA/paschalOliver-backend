@@ -18,11 +18,6 @@ router.get(
   auth(userRole.client),
   ProfessionalControllers.searchBySubcategory,
 );
-router.get(
-  '/:id',
-  auth(userRole.client),
-  ProfessionalControllers.getSingleProfessional,
-);
 router.post(
   '/',
   fileUploader.upload.fields([
@@ -50,6 +45,16 @@ router.patch(
     ProfessionalValidations.updateProfessionalStatusValidationSchema,
   ),
   ProfessionalControllers.updateProfessionalStatus,
+);
+router.get(
+  '/all-profile',
+  auth(userRole.admin),
+  ProfessionalControllers.getAllProfessionalAccount
+)
+router.get(
+  '/:id',
+  auth(userRole.client, userRole.admin),
+  ProfessionalControllers.getSingleProfessional,
 );
 
 export const ProfessionalRoutes = router;
