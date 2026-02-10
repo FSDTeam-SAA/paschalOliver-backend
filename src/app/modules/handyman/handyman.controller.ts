@@ -104,6 +104,20 @@ const professionalUpdateStatus = catchAsync(async (req, res) => {
   });
 });
 
+const searchProfessionalSubCategoryBased = catchAsync(async(req, res) =>{
+
+    const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+    const result = await handymanService.searchProfessionalSubCategoryBased(options);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Get all professional successfully',
+        data: result,
+  });
+
+})
+
 export const handymanController = {
   createHandymanRequest,
   getMyHandymanRequests,
@@ -113,4 +127,5 @@ export const handymanController = {
 
   getProfessionalInbox,
   professionalUpdateStatus,
+  searchProfessionalSubCategoryBased
 };

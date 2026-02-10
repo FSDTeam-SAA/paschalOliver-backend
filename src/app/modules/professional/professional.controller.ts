@@ -64,11 +64,26 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
   req.body.identity = req.body.identity || {};
   req.body.identity.documentFrontImage = frontImageResult?.url;
   req.body.identity.documentBackImage = backImageResult?.url;
+  console.log(req.body)
+
+  //add this part mahubur
+  if (req.body.workingSkills) {
+  if (typeof req.body.workingSkills === 'string') {
+    try {
+      req.body.workingSkills = JSON.parse(req.body.workingSkills);
+    } catch (error) {
+      throw new AppError(400, 'Invalid workingSkills format');
+    }
+  }
+}
+//==================
 
   const result = await ProfessionalServices.updateProfessionalProfile(
     userId,
     req.body,
   );
+
+  console.log("mahabur", result)
 
   sendResponse(res, {
     statusCode: 200,
@@ -142,8 +157,10 @@ const updateProfessionalStatus = catchAsync(
 
 const getAllProfessionalAccount = catchAsync(async(req, res) => {
 
+
+  const subCategory = req.body.subCategory;
   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
-  const result = await ProfessionalServices.getAllProfessionalAccount(options);
+  const result = await ProfessionalServices.getAllProfessionalAccount(options, subCategory);
 
   sendResponse(res, {
      statusCode: 200,

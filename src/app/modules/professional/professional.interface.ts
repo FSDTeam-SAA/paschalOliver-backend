@@ -64,6 +64,7 @@ export interface IProfessional {
 
   profileDetails?: IProfileDetails;
   gallery: [];
+  workingSkills?:string[];
 
   stripeAccountId?: string;
 }
