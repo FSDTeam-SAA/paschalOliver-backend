@@ -19,7 +19,7 @@ const scheduleSchema = new Schema(
     timeWindow: { type: String }, // "6-9" etc
     exactStartAt: { type: Date },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const paymentSchema = new Schema(
@@ -31,57 +31,48 @@ const paymentSchema = new Schema(
       default: 'UNPAID',
     },
   },
-  { _id: false }
-);
-
-// ✅ coordinates
-const coordinatesSchema = new Schema(
-  {
-    latitude: { type: Number, required: true },
-    longitude: { type: Number, required: true },
-  },
-  { _id: false }
-);
-
-// ✅ address schema (array items)
-const addressSchema = new Schema(
-  {
-    state: { type: String, required: true, trim: true },
-    city: { type: String, required: true, trim: true },
-    zipcode: { type: String, required: true, trim: true },
-    coordinates: { type: coordinatesSchema, required: true },
-  },
-  { _id: false }
+  { _id: false },
 );
 
 const handymanRequestSchema = new Schema<IHandymanRequest>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     subCategoryId: {
       type: Schema.Types.ObjectId,
-      ref: 'subCategory',
+      ref: 'Subcategory',
       required: true,
     },
-    categoryId: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
-
-    // ✅ addresses embedded
-    addresses: {
-      type: [addressSchema],
+    categoryId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
       required: true,
-      validate: {
-        validator: function (v: any[]) {
-          return Array.isArray(v) && v.length > 0;
-        },
-        message: 'At least one address is required',
-      },
     },
 
-    professionalId: { type: Schema.Types.ObjectId, ref: 'Professional' },
+    // ✅ Changed to Reference ID
+    address: {
+      type: Schema.Types.ObjectId,
+      ref: 'Address',
+      required: true,
+    },
 
-    schedule: { type: scheduleSchema, required: true },
+    professionalId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Professional',
+    },
 
-    note: { type: String, trim: true },
+    schedule: {
+      type: scheduleSchema,
+      required: true,
+    },
+
+    note: {
+      type: String,
+      trim: true,
+    },
 
     status: {
       type: String,
@@ -89,9 +80,13 @@ const handymanRequestSchema = new Schema<IHandymanRequest>(
       default: 'PENDING',
     },
 
-    payment: { type: paymentSchema },
+    payment: {
+      type: paymentSchema,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  },
 );
 
 const Handyman = model<IHandymanRequest>('Handyman', handymanRequestSchema);

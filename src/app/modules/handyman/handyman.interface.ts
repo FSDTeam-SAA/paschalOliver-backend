@@ -25,26 +25,14 @@ export interface IHandymanPayment {
   status?: 'UNPAID' | 'PAID' | 'REFUNDED';
 }
 
-export interface IHandymanCoordinates {
-  latitude: number;
-  longitude: number;
-}
-
-export interface IHandymanAddress {
-  state: string;
-  city: string;
-  zipcode: string;
-  coordinates: IHandymanCoordinates;
-}
-
 export interface IHandymanRequest {
   userId: Types.ObjectId;
 
   subCategoryId: Types.ObjectId;
   categoryId: Types.ObjectId;
 
-  // ✅ embedded addresses array (no Address model)
-  addresses: IHandymanAddress[];
+  // ✅ Address Reference ID
+  address: Types.ObjectId;
 
   professionalId?: Types.ObjectId;
 
