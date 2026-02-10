@@ -5,6 +5,7 @@ import { Listing } from '../listing/listing.model';
 import { Address } from '../address/address.model';
 import catchAsync from '../../utils/catchAsync';
 import pagination, { IOption } from '../../helper/pagenation';
+import mongoose from 'mongoose';
 
 const createProfessionalProfile = async (
   userId: string,
@@ -23,9 +24,6 @@ const updateProfessionalProfile = async (
   userId: string,
   payload: Partial<IProfessional>,
 ) => {
-
-  
-
   const result = await Professional.findOneAndUpdate(
     { user: userId },
     payload,
@@ -45,7 +43,6 @@ const getProfile = async (userId: string) => {
 };
 
 const getSingleProfessional = async (id: string) => {
-  
   const professional = await Professional.findById(id)
     .populate('user', 'name image about')
     .select('gallery profileDetails user')
@@ -65,27 +62,92 @@ const getSingleProfessional = async (id: string) => {
 };
 
 const searchBySubcategory = async (subcategoryId: string, userId: string) => {
+  // 1. Get User's Default Area
   const userAddress = await Address.findOne({ user: userId, isDefault: true });
   const userArea = userAddress?.area;
 
-  const professionalIds = await Listing.find({
-    subcategory: subcategoryId,
-    isActive: true,
-  }).distinct('professional');
+  // 2. Aggregation Pipeline starting from Listing
+  const result = await Listing.aggregate([
+    // Step 1: Match Listings for this Subcategory
+    {
+      $match: {
+        subcategory: new mongoose.Types.ObjectId(subcategoryId),
+        // isActive: true, // Uncomment if you want to filter active listings only
+      },
+    },
 
-  const query: any = {
-    _id: { $in: professionalIds }, // Must be in the list we just found
-    isVerified: true, // Optional: Only show verified pros
-  };
+    // Step 2: Get Professional Details
+    {
+      $lookup: {
+        from: 'professionals',
+        localField: 'professional',
+        foreignField: '_id',
+        as: 'professional',
+      },
+    },
+    { $unwind: '$professional' },
 
-  if (userArea) {
-    query.workingAreas = userArea;
-  }
+    // Step 3: Filter by Area (Only if user has a default area)
+    ...(userArea
+      ? [
+          {
+            $match: {
+              'professional.workingAreas': userArea,
+            },
+          },
+        ]
+      : []),
 
-  const result = await Professional.find(query).select('gallery').populate({
-    path: 'user',
-    select: 'name image',
-  });
+    // Step 4: Get User Details (Name, Image)
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'professional.user',
+        foreignField: '_id',
+        as: 'userDetails',
+      },
+    },
+    { $unwind: '$userDetails' },
+
+    // Step 5: Get Review Stats (Rating & Count)
+    {
+      $lookup: {
+        from: 'comments',
+        let: { proId: '$professional._id' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$professionalId', '$$proId'] } } },
+          {
+            $group: {
+              _id: null,
+              avgRating: { $avg: '$rating' },
+              totalReviews: { $sum: 1 },
+            },
+          },
+        ],
+        as: 'stats',
+      },
+    },
+    {
+      $unwind: {
+        path: '$stats',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    // Step 6: Final Projection
+    {
+      $project: {
+        _id: '$professional._id',
+        name: '$userDetails.name',
+        image: '$userDetails.image',
+        gallery: '$professional.gallery',
+        price: '$price', // Directly from the Listing document
+        rating: { $ifNull: ['$stats.avgRating', 0] },
+        reviewCount: { $ifNull: ['$stats.totalReviews', 0] },
+      },
+    },
+  ]);
+
   return result;
 };
 
@@ -105,23 +167,24 @@ const updateProfessionalStatus = async (id: string, status: string) => {
   return result;
 };
 
-const getAllProfessionalAccount = async(options: IOption, subCategory:string) => {
+const getAllProfessionalAccount = async (
+  options: IOption,
+  subCategory: string,
+) => {
+  const { page, limit, skip, sortBy, sortOrder } = pagination(options);
 
-    const { page, limit, skip, sortBy, sortOrder } = pagination(options);
+  const result = await Professional.find()
+    .skip(skip)
+    .limit(limit)
+    .sort({ [sortBy]: sortOrder } as any);
 
-    const result = await Professional.find()
-      .skip(skip)
-      .limit(limit)
-      .sort({ [sortBy]: sortOrder } as any);
-  
-    const total = await Professional.countDocuments();
-  
-    return {
-      data: result,
-      meta: { total, page, limit },
-    };
+  const total = await Professional.countDocuments();
 
-}
+  return {
+    data: result,
+    meta: { total, page, limit },
+  };
+};
 export const ProfessionalServices = {
   createProfessionalProfile,
   updateProfessionalProfile,
@@ -129,5 +192,5 @@ export const ProfessionalServices = {
   getSingleProfessional,
   searchBySubcategory,
   updateProfessionalStatus,
-  getAllProfessionalAccount
+  getAllProfessionalAccount,
 };
