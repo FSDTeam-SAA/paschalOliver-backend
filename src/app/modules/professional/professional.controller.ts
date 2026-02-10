@@ -4,6 +4,7 @@ import sendResponse from '../../utils/sendResponse';
 import { fileUploader } from '../../helper/fileUploder';
 import { ProfessionalServices } from './professional.service';
 import AppError from '../../error/appError';
+import pick from '../../helper/pick';
 
 const createProfile = catchAsync(async (req: Request, res: Response) => {
   //const userId = req.user.id;
@@ -139,6 +140,18 @@ const updateProfessionalStatus = catchAsync(
   },
 );
 
+const getAllProfessionalAccount = catchAsync(async(req, res) => {
+
+  const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+  const result = await ProfessionalServices.getAllProfessionalAccount(options);
+
+  sendResponse(res, {
+     statusCode: 200,
+     success: true,
+     message: `All professional get successfully`,
+     data: result
+  })
+})
 export const ProfessionalControllers = {
   createProfile,
   updateProfile,
@@ -146,4 +159,5 @@ export const ProfessionalControllers = {
   getSingleProfessional,
   searchBySubcategory,
   updateProfessionalStatus,
+  getAllProfessionalAccount
 };

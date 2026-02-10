@@ -3,6 +3,8 @@ import { IProfessional } from './professional.interface';
 import AppError from '../../error/appError';
 import { Listing } from '../listing/listing.model';
 import { Address } from '../address/address.model';
+import catchAsync from '../../utils/catchAsync';
+import pagination, { IOption } from '../../helper/pagenation';
 
 const createProfessionalProfile = async (
   userId: string,
@@ -34,11 +36,13 @@ const updateProfessionalProfile = async (
 };
 
 const getProfile = async (userId: string) => {
+  console.log(userId);
   const result = await Professional.findOne({ user: userId }).populate('user');
   return result;
 };
 
 const getSingleProfessional = async (id: string) => {
+  
   const professional = await Professional.findById(id)
     .populate('user', 'name image about')
     .select('gallery profileDetails user')
@@ -98,6 +102,23 @@ const updateProfessionalStatus = async (id: string, status: string) => {
   return result;
 };
 
+const getAllProfessionalAccount = async(options: IOption) => {
+
+    const { page, limit, skip, sortBy, sortOrder } = pagination(options);
+  
+    const result = await Professional.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ [sortBy]: sortOrder } as any);
+  
+    const total = await Professional.countDocuments();
+  
+    return {
+      data: result,
+      meta: { total, page, limit },
+    };
+
+}
 export const ProfessionalServices = {
   createProfessionalProfile,
   updateProfessionalProfile,
@@ -105,4 +126,5 @@ export const ProfessionalServices = {
   getSingleProfessional,
   searchBySubcategory,
   updateProfessionalStatus,
+  getAllProfessionalAccount
 };

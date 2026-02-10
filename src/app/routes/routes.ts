@@ -18,6 +18,7 @@ import { AdminRoutes } from '../modules/admin/admin.route';
 import { PaymentRoutes } from '../modules/payment/payment.route';
 import { NotificationRoutes } from '../modules/notification/notification.route';
 import { CouponRoutes } from '../modules/coupon/coupon.route';
+import { handymanRouter } from '../modules/handyman/handyman.routes';
 
 const router = Router();
 
@@ -97,6 +98,10 @@ const moduleRoutes = [
   {
     path: '/coupon',
     route: CouponRoutes,
+  },
+   {
+    path: '/handyman',
+    route: handymanRouter,
   },
 ];
 
