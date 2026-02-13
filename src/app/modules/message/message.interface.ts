@@ -4,7 +4,7 @@ export interface IMessage {
   conversation: Types.ObjectId;
   sender: Types.ObjectId;
   receiver: Types.ObjectId;
-  content: string;
+  message: string;
   image?: {
     url: string;
     public_id: string;
@@ -14,4 +14,5 @@ export interface IMessage {
   isRead: boolean;
   createdAt: Date;
   updatedAt?: Date;
+  bookingId?: Types.ObjectId;
 }

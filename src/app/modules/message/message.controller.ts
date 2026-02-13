@@ -1,4 +1,4 @@
-import { getIo } from '../../socket/server';
+// import { getIo } from '../../socket/server';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { MessageServices } from './message.service';
@@ -8,53 +8,29 @@ export const sendMessageController = catchAsync(async (req, res) => {
   const senderId = req.user.id;
   const image = req.file;
 
-  const { conversationId, receiverId, content, attachments } = req.body;
+  const { conversationId, receiverId, message, attachments, bookingId } = req.body;
 
   //  Save message in DB
-  const message = await MessageServices.sendMessage(
+  const messageSent = await MessageServices.sendMessage(
     senderId,
     conversationId,
     receiverId,
-    content,
+    message,
     attachments,
     image,
+    bookingId,
+    req,
   );
 
-  if (!message) {
+  if (!messageSent) {
     throw new Error('Failed to send message');
   }
-
-  // Emit to personal room of receiverId
-  getIo().to(receiverId).emit('newMessage', {
-    _id: message._id,
-    conversation: message.conversation,
-    sender: message.sender,
-    receiver: message.receiver,
-    content: message.content,
-    attachments: message.attachments,
-    createdAt: message.createdAt,
-    updatedAt: message.updatedAt,
-  });
-
-  // //  Emit to sender as well if needed (for live UI update)
-  // getIo().to(senderId).emit('newMessage', {
-  //   _id: message._id,
-  //   conversation: message.conversation,
-  //   sender: message.sender,
-  //   receiver: message.receiver,
-  //   content: message.content,
-  //   attachments: message.attachments,
-  //   isRead: message.isRead,
-  //   createdAt: message.createdAt,
-  //   updatedAt: message.updatedAt,
-  // });
-
   //  Send HTTP response
   sendResponse(res, {
     statusCode: 201,
     success: true,
     message: 'Message sent successfully',
-    data: message,
+    data: messageSent,
   });
 });
 
@@ -100,9 +76,9 @@ export const deleteMessageController = catchAsync(async (req, res) => {
     messageId as string,req.user.id
   );
 
-  if (!deletedMessage) {
-    throw new Error('Failed to delete message');
-  }
+  // if (!deletedMessage) {
+  //   throw new Error('Failed to delete message');
+  // }
 
   sendResponse(res, {
     statusCode: 200,
