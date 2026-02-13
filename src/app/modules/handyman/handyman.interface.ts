@@ -25,22 +25,21 @@ export interface IHandymanPayment {
   status?: 'UNPAID' | 'PAID' | 'REFUNDED';
 }
 
+export interface IClientReview {
+  rating: number; // 1-5
+  tags?: string[]; // e.g., ["Polite Client", "Good behavior"]
+  comment?: string;
+}
+
 export interface IHandymanRequest {
   userId: Types.ObjectId;
-
   subCategoryId: Types.ObjectId;
   categoryId: Types.ObjectId;
-
-  // ✅ Address Reference ID
   address: Types.ObjectId;
-
   professionalId?: Types.ObjectId;
-
   schedule: IHandymanSchedule;
-
   note?: string;
-
   status: TRequestStatus;
-
   payment?: IHandymanPayment;
+  clientReview?: IClientReview;
 }

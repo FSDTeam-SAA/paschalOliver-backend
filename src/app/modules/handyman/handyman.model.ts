@@ -34,6 +34,15 @@ const paymentSchema = new Schema(
   { _id: false },
 );
 
+const clientReviewSchema = new Schema(
+  {
+    rating: { type: Number, required: true, min: 1, max: 5 },
+    tags: [{ type: String }],
+    comment: { type: String },
+  },
+  { _id: false },
+);
+
 const handymanRequestSchema = new Schema<IHandymanRequest>(
   {
     userId: {
@@ -82,6 +91,9 @@ const handymanRequestSchema = new Schema<IHandymanRequest>(
 
     payment: {
       type: paymentSchema,
+    },
+    clientReview: {
+      type: clientReviewSchema,
     },
   },
   {
