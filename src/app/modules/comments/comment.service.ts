@@ -1,10 +1,10 @@
 import { Comment } from './comment.model';
 import AppError from '../../error/appError';
 import { Professional } from '../professional/professional.model';
-import { Booking } from '../booking/booking.model';
 import mongoose from 'mongoose';
 import { NotificationService } from '../notification/notification.service';
 import { NOTIFICATION_TYPE } from '../notification/notification.constant';
+import { Booking } from '../_archive/booking/booking.model';
 // import { getIo } from '../../socket/server';
 
 interface ICreateCommentPayload {
