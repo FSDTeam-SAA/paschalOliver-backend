@@ -1,8 +1,8 @@
 import express from 'express';
-import auth from '../../middlewares/auth';
-import { userRole } from '../user/user.constant';
 import { BookingControllers } from './booking.controller';
-import { checkUserBlocked } from '../../middlewares/checkBlockUser';
+import { userRole } from '../../user/user.constant';
+import { checkUserBlocked } from '../../../middlewares/checkBlockUser';
+import auth from '../../../middlewares/auth';
 
 const router = express.Router();
 

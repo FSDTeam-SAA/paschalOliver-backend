@@ -1,13 +1,13 @@
 import mongoose, { Types } from 'mongoose';
-import AppError from '../../error/appError';
-import { Listing } from '../listing/listing.model';
-import { RequestHistory } from '../_archive/Requests_history/requestHistory.model';
 import { IBooking } from './booking.interface';
 import { Booking } from './booking.model';
+import AppError from '../../../error/appError';
+import { Listing } from '../../listing/listing.model';
+import { User } from '../../user/user.model';
+import { NotificationService } from '../../notification/notification.service';
+import { NOTIFICATION_TYPE } from '../../notification/notification.constant';
+import { RequestHistory } from '../Requests_history/requestHistory.model';
 // import { getIo } from '../../socket/server';
-import { NotificationService } from '../notification/notification.service';
-import { NOTIFICATION_TYPE } from '../notification/notification.constant';
-import { User } from '../user/user.model';
 // import httpStatus from 'http-status-codes';
 
 // Create booking

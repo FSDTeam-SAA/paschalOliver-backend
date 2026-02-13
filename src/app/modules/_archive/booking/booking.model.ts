@@ -1,5 +1,6 @@
 import { Schema, Types, model } from 'mongoose';
 import { IBooking } from './booking.interface';
+import { RequestHistory } from '../Requests_history/requestHistory.model';
 
 const bookingSchema = new Schema<IBooking>(
   {
@@ -71,9 +72,6 @@ const bookingSchema = new Schema<IBooking>(
 bookingSchema.post('save', async function (doc) {
   try {
     // Import here to avoid circular dependency
-    const { RequestHistory } = await import(
-      '../_archive/Requests_history/requestHistory.model'
-    );
 
     // Map booking status to request history status
     let historyStatus = 'new';

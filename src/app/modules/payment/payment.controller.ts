@@ -6,7 +6,7 @@ import { Payment } from './payment.model';
 import Stripe from 'stripe';
 import config from '../../config';
 import AppError from '../../error/appError';
-import { Booking } from '../booking/booking.model';
+import { Booking } from '../_archive/booking/booking.model';
 
 const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
   const { amount, professionalId, bookingId, couponCode } = req.body;
