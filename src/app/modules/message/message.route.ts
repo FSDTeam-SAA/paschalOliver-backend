@@ -2,11 +2,16 @@ import express from 'express';
 
 import auth from '../../middlewares/auth';
 import { userRole } from '../user/user.constant';
-import { getMessagesController, sendMessageController,markMessageAsReadController,deleteMessageController, hardDeleteMessageController } from './message.controller';
+import { getMessagesController, sendMessageController,markMessageAsReadController,deleteMessageController, hardDeleteMessageController, getCommunicatedUsersController } from './message.controller';
 import { fileUploader } from '../../helper/fileUploder';
 
 const router = express.Router();
 
+router.get(
+  '/get-communicated-users',
+  auth(userRole.professional, userRole.client),
+  getCommunicatedUsersController,
+)
 router.post(
   '/send-message',
   auth(userRole.professional, userRole.client),
@@ -15,7 +20,7 @@ router.post(
 );
 
 router.get(
-  '/get-messages/:conversationId',
+  '/get-messages/:bookingId',
   auth(userRole.professional, userRole.client),
   getMessagesController,
 );

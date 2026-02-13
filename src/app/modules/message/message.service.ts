@@ -72,21 +72,22 @@ const sendMessage = async (
 };
 
 
-const getMessages = async (conversationId: string, userId: string) => {
+const getMessages = async (bookingId: string, userId: string) => {
+  
   // Check if conversation exists
-  const conversation = await Conversation.findById(conversationId);
-  if (!conversation) {
-    throw new AppError(404, 'Conversation not found');
-  }
+  // const conversation = await Message.findOne({ bookingId: bookingId });
+  // if (!conversation) {
+  //   throw new AppError(404, 'Conversation not found');
+  // }
 
   // Check if user is a participant
-  if (!conversation.participants.includes(userId as any)) {
-    throw new AppError(403, 'You are not a participant of this conversation');
-  }
+    // if (!conversation.participants.includes(userId as any)) {
+    //   throw new AppError(403, 'You are not a participant of this conversation');
+    // }
 
   // get messages
   const messages = await Message.find({
-    conversation: conversationId,
+    bookingId: bookingId,
     isDeleted: false,
   })
     .sort({ createdAt: -1 })
@@ -103,6 +104,8 @@ const getMessages = async (conversationId: string, userId: string) => {
 
   return messages;
 };
+
+
 
 const markMessageAsRead = async (messageId: string, userId: string) => {
   const message = await Message.findByIdAndUpdate(
@@ -158,10 +161,97 @@ const hardDeleteMessage = async (messageId: string) => {
   return message;
 };
 
+const getCommunicatedUsers = async (userId: string) => {
+  const myObjectId = new Types.ObjectId(userId);
+
+  const users = await Message.aggregate([
+    {
+      $match: {
+        isDeleted: false,
+        $or: [
+          { sender: myObjectId },
+          { receiver: myObjectId }
+        ]
+      }
+    },
+
+    // Determine the "other user"
+    {
+      $addFields: {
+        otherUser: {
+          $cond: [
+            { $eq: ['$sender', myObjectId] },
+            '$receiver',
+            '$sender'
+          ]
+        }
+      }
+    },
+
+    // Sort by newest message first
+    { $sort: { createdAt: -1 } },
+
+    // Group by other user
+    {
+      $group: {
+        _id: '$otherUser',
+        lastMessage: { $first: '$message' },
+        lastMessageTime: { $first: '$createdAt' },
+        bookingId: { $first: '$bookingId' },
+        unreadCount: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $eq: ['$receiver', myObjectId] },
+                  { $eq: ['$isRead', false] }
+                ]
+              },
+              1,
+              0
+            ]
+          }
+        }
+      }
+    },
+
+    // Join user info
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'user'
+      }
+    },
+    { $unwind: '$user' },
+
+    // Clean output
+    {
+      $project: {
+        _id: 0,
+        user: {
+          _id: '$user._id',
+          name: '$user.name',
+          email: '$user.email',
+          image: '$user.image'
+        },
+        lastMessage: 1,
+        lastMessageTime: 1,
+        unreadCount: 1
+      }
+    }
+  ]);
+
+  return users;
+};
+
+
 export const MessageServices = {
   sendMessage,
   getMessages,
   markMessageAsRead,
   deleteMessage,
   hardDeleteMessage,
+  getCommunicatedUsers,
 };

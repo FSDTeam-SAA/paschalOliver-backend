@@ -36,10 +36,10 @@ export const sendMessageController = catchAsync(async (req, res) => {
 
 // Get all messages in a conversation
 export const getMessagesController = catchAsync(async (req, res) => {
-  const { conversationId } = req.params;
+  const { bookingId } = req.params;
   const userId = req.user.id;
   const messages = await MessageServices.getMessages(
-    conversationId as string,
+    bookingId as string,
     userId as string,
   );
 
@@ -103,3 +103,18 @@ export const hardDeleteMessageController = catchAsync(async (req, res) => {
     data: deletedMessage,
   });
 });
+
+
+export const getCommunicatedUsersController = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+
+  const result = await MessageServices.getCommunicatedUsers(userId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Communicated users fetched successfully',
+    data: result,
+  });
+});
+
