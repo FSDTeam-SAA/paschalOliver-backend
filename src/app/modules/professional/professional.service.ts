@@ -37,7 +37,6 @@ const updateProfessionalProfile = async (
 };
 
 const getProfile = async (userId: string) => {
-  console.log(userId);
   const result = await Professional.findOne({ user: userId }).populate('user');
   return result;
 };
