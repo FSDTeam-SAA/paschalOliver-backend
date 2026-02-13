@@ -7,7 +7,7 @@ const messageSchema = new Schema<IMessage>(
     conversation: {
       type: Schema.Types.ObjectId,
       ref: 'Conversation',
-      required: true,
+      // required: true,
     },
     sender: {
       type: Schema.Types.ObjectId,
@@ -20,7 +20,7 @@ const messageSchema = new Schema<IMessage>(
       required: true,
     },
     isDeleted: { type: Boolean, default: false },
-    content: { type: String, required: false },
+    message: { type: String, required: false },
     image: {
       url: {
         type: String,
@@ -30,6 +30,7 @@ const messageSchema = new Schema<IMessage>(
     },
     attachments: { type: [String], required: false },
     isRead: { type: Boolean, default: false },
+    bookingId: { type: Schema.Types.ObjectId, ref: 'Handyman', required: false },
   },
   {
     timestamps: true,
