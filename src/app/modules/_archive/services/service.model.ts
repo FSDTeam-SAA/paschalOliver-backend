@@ -1,6 +1,6 @@
 import { model, Schema } from 'mongoose';
 import { IService } from './service.interface';
-import AppError from '../../error/appError';
+import AppError from '../../../error/appError';
 
 const serviceSchema = new Schema<IService>(
   {
@@ -34,8 +34,8 @@ serviceSchema.pre('save', async function (next) {
 
 //update title cant be duplicate
 serviceSchema.pre('findOneAndUpdate', async function (next) {
- const update = this.getUpdate() as any;
- const title = update.title ?? update.$set?.title;
+  const update = this.getUpdate() as any;
+  const title = update.title ?? update.$set?.title;
 
   const duplicate = await Service.findOne({ title: title });
   if (duplicate) {

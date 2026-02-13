@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import catchAsync from '../../utils/catchAsync';
-import sendResponse from '../../utils/sendResponse';
+import catchAsync from '../../../utils/catchAsync';
+import sendResponse from '../../../utils/sendResponse';
 import { Service } from './service.model';
-import { Subcategory } from '../subcategory/subcategory.model';
-import AppError from '../../error/appError';
+import { Subcategory } from '../../subcategory/subcategory.model';
+import AppError from '../../../error/appError';
 import mongoose from 'mongoose';
 
 //create service

@@ -7,14 +7,14 @@ import {
   updateService,
   deleteService,
 } from './service.controller';
-import { upload } from '../../middlewares/multer.middleware';
-import validateRequest from '../../middlewares/validateRequest';
+import { upload } from '../../../middlewares/multer.middleware';
+import validateRequest from '../../../middlewares/validateRequest';
 import {
   createServiceSchema,
   updateServiceSchema,
 } from './service.validationSchema';
-import auth from '../../middlewares/auth';
-import { userRole } from '../user/user.constant';
+import auth from '../../../middlewares/auth';
+import { userRole } from '../../user/user.constant';
 
 const router = express.Router();
 

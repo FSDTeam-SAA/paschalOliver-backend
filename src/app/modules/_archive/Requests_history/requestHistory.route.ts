@@ -1,9 +1,9 @@
 import express from 'express';
 import { RequestHistoryControllers } from './requestHistory.controller';
-import validateRequest from '../../middlewares/validateRequest';
+import validateRequest from '../../../middlewares/validateRequest';
 import { RequestHistoryValidation } from './requestHistory.validation';
-import auth from '../../middlewares/auth';
-import { userRole } from '../user/user.constant';
+import auth from '../../../middlewares/auth';
+import { userRole } from '../../user/user.constant';
 
 const router = express.Router();
 
