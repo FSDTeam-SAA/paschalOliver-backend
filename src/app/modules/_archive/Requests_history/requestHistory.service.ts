@@ -1,14 +1,13 @@
 import { RequestHistory } from './requestHistory.model';
-import { Booking } from '../../booking/booking.model';
 import { requestHistoryStatus } from './requestHistory.constant';
 
-import AppError from '../../error/appError';
-import { Listing } from '../listing/listing.model';
-import { Professional } from '../professional/professional.model';
-import { NotificationService } from '../notification/notification.service';
-import { NOTIFICATION_TYPE } from '../notification/notification.constant';
-import { getIo } from '../../socket/server';
 import mongoose from 'mongoose';
+import { Professional } from '../../professional/professional.model';
+import AppError from '../../../error/appError';
+import { Listing } from '../../listing/listing.model';
+import { Booking } from '../booking/booking.model';
+import { NotificationService } from '../../notification/notification.service';
+import { NOTIFICATION_TYPE } from '../../notification/notification.constant';
 
 // Get professional's request history with filtering and pagination
 const getRequestHistory = async (
