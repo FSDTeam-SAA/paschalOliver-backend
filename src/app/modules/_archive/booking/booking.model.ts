@@ -72,7 +72,7 @@ bookingSchema.post('save', async function (doc) {
   try {
     // Import here to avoid circular dependency
     const { RequestHistory } = await import(
-      '../Requests_history/requestHistory.model'
+      '../_archive/Requests_history/requestHistory.model'
     );
 
     // Map booking status to request history status

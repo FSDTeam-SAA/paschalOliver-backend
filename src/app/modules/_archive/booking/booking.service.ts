@@ -1,7 +1,7 @@
 import mongoose, { Types } from 'mongoose';
 import AppError from '../../error/appError';
 import { Listing } from '../listing/listing.model';
-import { RequestHistory } from '../Requests_history/requestHistory.model';
+import { RequestHistory } from '../_archive/Requests_history/requestHistory.model';
 import { IBooking } from './booking.interface';
 import { Booking } from './booking.model';
 import { getIo } from '../../socket/server';
