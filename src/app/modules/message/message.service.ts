@@ -7,137 +7,6 @@ import { fileUploader } from '../../helper/fileUploder';
 import { User } from '../user/user.model';
 import Handyman from '../handyman/handyman.model';
 
-// const sendMessage = async (
-//   senderId: string,
-//   conversationId: string,
-//   receiverId: string,
-//   content?: string,
-//   attachments?: string[],
-//   image?: Express.Multer.File,
-//   bookingId?: string,
-//   req?: any,
-// ) => {
-
-//    const sender = await User.findById(senderId);
-//     if (!sender) {
-//       throw new AppError(404, 'Sender not found');
-//     }
-
-//     // Validate receiver exists
-//     const receiver = await User.findById(receiverId);
-//     if (!receiver) {
-//       throw new AppError(404, 'Receiver not found');
-//     }
-//     const handyman = await Handyman.findById(bookingId);
-// ;    if (!handyman) {
-//       throw new AppError(404, 'Handyman not found');
-//     }
-
-//     // Create message
-//     const createdMessage = await Message.create({
-//       conversation: conversationId,
-//       sender: senderId,
-//       receiver: receiverId,
-//       content,
-//       attachments: attachments || [],
-//       isRead: false,
-//       ...(bookingId && { bookingId }),
-//     });
-
-//     // Upload image to cloudinary if provided
-//     if (image) {
-//       const messageImage = await fileUploader.uploadToCloudinary(image);
-//       if (messageImage) {
-//         createdMessage.image = {
-//           url: messageImage.url,
-//           public_id: messageImage.public_id,
-//         };
-//         await createdMessage.save();
-//       }
-//     }
-//     // Emit message to booking room
-//     const io = req.app.get('io');
-//     const messageData = {
-//       bookingId,
-//       senderId,
-//       receiverId,
-//       message: content?.trim() || '',
-//       timestamp: createdMessage.createdAt
-//     };
-    
-//     // ✅ ONLY emit to booking room (both participants are in this room)
-//     io.to(`booking:${bookingId}`).emit('receive-message', messageData);
-
-//     // Update lastMessage in conversation
-//     // conversation.lastMessage = createdMessage._id;
-//     // await conversation.save();
-//     const message = await Message.findById(createdMessage._id)
-//       .populate('sender', 'name email image')
-//       .populate('receiver', 'name email image');
-
-
-//     return message;
-// };
-// const sendMessage = async (
-//   senderId: string,
-//   conversationId: string,
-//   receiverId: string,
-//   content?: string,
-//   attachments: string[] = [],
-//   image?: Express.Multer.File,
-//   bookingId?: string,
-//   req?: any,
-// ) => {
-//   const sender = await User.findById(senderId);
-//   if (!sender) throw new AppError(404, 'Sender not found');
-
-//   const receiver = await User.findById(receiverId);
-//   if (!receiver) throw new AppError(404, 'Receiver not found');
-
-//   // const conversation = await Conversation.findById(conversationId);
-//   // if (!conversation) throw new AppError(404, 'Conversation not found');
-//   const handyman = await Handyman.findById(bookingId);
-//   if (!handyman) throw new AppError(404, 'Handyman not found');
-
-//   const createdMessage = await Message.create({
-//     conversation: conversationId,
-//     sender: senderId,
-//     receiver: receiverId,
-//     content: content?.trim(),
-//     attachments,
-//     isRead: false,
-//     ...(bookingId && { bookingId }),
-//   });
-
-//   if (image) {
-//     const uploaded = await fileUploader.uploadToCloudinary(image);
-//     if (uploaded) {
-//       createdMessage.image = {
-//         url: uploaded.url,
-//         public_id: uploaded.public_id,
-//       };
-//       await createdMessage.save();
-//     }
-//   }
-
-//   console.log(`📩 New message from ${senderId} to ${receiverId} in conversation ${conversationId}: ${content} check ${bookingId}`);
-//   if (req?.app?.get('io') && bookingId) {
-//     console.log(`🚀 Emitting message to booking room: booking:${bookingId}`);
-//     const io = req.app.get('io');
-//     io.to(`booking:${bookingId}`).emit('receive-message', {
-//       bookingId,
-//       senderId,
-//       receiverId,
-//       message: content?.trim() || '',
-//       timestamp: createdMessage.createdAt,
-//     });
-//   }
-
-//   return Message.findById(createdMessage._id)
-//     .populate('sender', 'name email image')
-//     .populate('receiver', 'name email image');
-// };
-
 const sendMessage = async (
   senderId: string,
   conversationId: string,
@@ -188,7 +57,8 @@ const sendMessage = async (
       senderId,
       receiverId,
       message: content?.trim() || '',
-      content: content?.trim() || '',
+      attachments: createdMessage.attachments || [],
+      image: createdMessage.image || null,
       timestamp: createdMessage.createdAt,
     });
     console.log("✅ Message emitted successfully");
