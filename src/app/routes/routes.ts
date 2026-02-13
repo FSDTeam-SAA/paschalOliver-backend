@@ -7,11 +7,11 @@ import { AddressRoutes } from '../modules/address/address.route';
 import { BookingRoutes } from '../modules/booking/booking.route';
 import { LocationRoutes } from '../modules/location/location.route';
 import { ProfessionalRoutes } from '../modules/professional/professional.route';
-import { ServiceRoutes } from '../modules/services/service.route';
+import { ServiceRoutes } from '../modules/_archive/services/service.route';
 import { ListingRoutes } from '../modules/listing/listing.route';
 import { ConversationRoutes } from '../modules/conversation/conversation.route';
 import { MessageRoutes } from '../modules/message/message.route';
-import { RequestHistoryRoutes } from '../modules/Requests_history/requestHistory.route';
+import { RequestHistoryRoutes } from '../modules/_archive/Requests_history/requestHistory.route';
 import { FavoriteRoutes } from '../modules/favorite/favorite.route';
 import { CommentRoutes } from '../modules/comments/comment.route';
 import { AdminRoutes } from '../modules/admin/admin.route';
@@ -19,6 +19,8 @@ import { PaymentRoutes } from '../modules/payment/payment.route';
 import { NotificationRoutes } from '../modules/notification/notification.route';
 import { CouponRoutes } from '../modules/coupon/coupon.route';
 import { handymanRouter } from '../modules/handyman/handyman.routes';
+import { requestHistoryRoutes } from '../modules/requestHistory/requestHistory.route';
+import { serviceRoutes } from '../modules/service/service.route';
 
 const router = Router();
 
@@ -55,14 +57,14 @@ const moduleRoutes = [
     path: '/professional',
     route: ProfessionalRoutes,
   },
-  {
-    path: '/request-history',
-    route: RequestHistoryRoutes,
-  },
-  {
-    path: '/services',
-    route: ServiceRoutes,
-  },
+  // {
+  //   path: '/request-history',
+  //   route: RequestHistoryRoutes,
+  // },
+  // {
+  //   path: '/services',
+  //   route: ServiceRoutes,
+  // },
   {
     path: '/listing',
     route: ListingRoutes,
@@ -99,9 +101,17 @@ const moduleRoutes = [
     path: '/coupon',
     route: CouponRoutes,
   },
-   {
+  {
     path: '/handyman',
     route: handymanRouter,
+  },
+  {
+    path: '/request-history',
+    route: requestHistoryRoutes,
+  },
+  {
+    path: '/service',
+    route: serviceRoutes,
   },
 ];
 
