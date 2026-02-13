@@ -1,11 +1,11 @@
 import mongoose, { Types } from 'mongoose';
 import AppError from '../../error/appError';
-import { Booking } from '../booking/booking.model';
 import { NotificationService } from '../notification/notification.service';
 import { Professional } from '../professional/professional.model';
 
 import { User } from '../user/user.model';
 import { NOTIFICATION_TYPE } from '../notification/notification.constant';
+import { Booking } from '../_archive/booking/booking.model';
 // import { getIo } from '../../socket/server';
 
 export const bookingManagementService = async () => {
