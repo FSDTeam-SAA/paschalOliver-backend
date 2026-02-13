@@ -7,7 +7,7 @@ import { Listing } from '../listing/listing.model';
 import { Professional } from '../professional/professional.model';
 import { NotificationService } from '../notification/notification.service';
 import { NOTIFICATION_TYPE } from '../notification/notification.constant';
-import { getIo } from '../../socket/server';
+// import { getIo } from '../../socket/server';
 import mongoose from 'mongoose';
 
 // Get professional's request history with filtering and pagination
@@ -257,9 +257,9 @@ const acceptRequest = async (userId: string, requestId: string) => {
           timestamp: new Date().toISOString(),
         };
 
-        getIo()
-          .to(updatedRequestHistory.customer._id.toString())
-          .emit('bookingAccepted', socketPayload);
+        // getIo()
+        //   .to(updatedRequestHistory.customer._id.toString())
+        //   .emit('bookingAccepted', socketPayload);
 
         console.log('✅ Notification and socket event sent successfully');
       } catch (error) {
@@ -416,9 +416,9 @@ const rejectRequest = async (userId: string, requestId: string) => {
           timestamp: new Date().toISOString(),
         };
 
-        getIo()
-          .to(updatedRequestHistory.customer._id.toString())
-          .emit('bookingRejected', socketPayload);
+        // getIo()
+        //   .to(updatedRequestHistory.customer._id.toString())
+        //   .emit('bookingRejected', socketPayload);
 
         console.log('✅ Rejection notification sent successfully');
       } catch (error) {
@@ -565,9 +565,9 @@ const completeRequest = async (requestId: string) => {
           timestamp: new Date().toISOString(),
         };
 
-        getIo()
-          .to(updatedRequestHistory.customer._id.toString())
-          .emit('bookingCompleted', customerSocketPayload);
+        // getIo()
+        //   .to(updatedRequestHistory.customer._id.toString())
+        //   .emit('bookingCompleted', customerSocketPayload);
 
         console.log(
           '✅ Completion notifications sent to customer successfully',
