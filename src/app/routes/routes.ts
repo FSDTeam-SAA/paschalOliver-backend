@@ -4,7 +4,6 @@ import { authRoutes } from '../modules/auth/auth.routes';
 import { CategoryRoutes } from '../modules/category/category.route';
 import { SubcategoryRoutes } from '../modules/subcategory/subcategory.route';
 import { AddressRoutes } from '../modules/address/address.route';
-import { BookingRoutes } from '../modules/booking/booking.route';
 import { LocationRoutes } from '../modules/location/location.route';
 import { ProfessionalRoutes } from '../modules/professional/professional.route';
 import { ServiceRoutes } from '../modules/_archive/services/service.route';
@@ -21,6 +20,7 @@ import { CouponRoutes } from '../modules/coupon/coupon.route';
 import { handymanRouter } from '../modules/handyman/handyman.routes';
 import { requestHistoryRoutes } from '../modules/requestHistory/requestHistory.route';
 import { serviceRoutes } from '../modules/service/service.route';
+import { BookingRoutes } from '../modules/_archive/booking/booking.route';
 
 const router = Router();
 
@@ -45,10 +45,10 @@ const moduleRoutes = [
     path: '/address',
     route: AddressRoutes,
   },
-  {
-    path: '/bookings',
-    route: BookingRoutes,
-  },
+  // {
+  //   path: '/bookings',
+  //   route: BookingRoutes,
+  // },
   {
     path: '/location',
     route: LocationRoutes,
