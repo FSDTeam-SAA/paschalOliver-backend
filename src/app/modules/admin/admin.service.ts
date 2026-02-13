@@ -6,7 +6,7 @@ import { Professional } from '../professional/professional.model';
 
 import { User } from '../user/user.model';
 import { NOTIFICATION_TYPE } from '../notification/notification.constant';
-import { getIo } from '../../socket/server';
+// import { getIo } from '../../socket/server';
 
 export const bookingManagementService = async () => {
   const getLatestBookingsService = await Booking.aggregate([
@@ -246,11 +246,11 @@ export const blockUserService = async (userId: string, adminId: string) => {
     await session.commitTransaction();
 
     // 4️⃣ Emit socket event AFTER commit
-    setImmediate(() => {
-      getIo().to(user._id.toString()).emit('userBlocked', {
-        type: NOTIFICATION_TYPE.BLOCK_USER,
-      });
-    });
+    // setImmediate(() => {
+    //   getIo().to(user._id.toString()).emit('userBlocked', {
+    //     type: NOTIFICATION_TYPE.BLOCK_USER,
+    //   });
+    // });
 
     return user;
   } catch (error) {
@@ -298,12 +298,12 @@ export const unblockUserService = async (userId: string, adminId: string) => {
 
     await session.commitTransaction();
 
-    setImmediate(() => {
-      getIo().to(user._id.toString()).emit('userUnblocked', {
-        type: NOTIFICATION_TYPE.UNBLOCK_USER,
-      });
-      console.log('unblock notification sent successfully');
-    });
+    // setImmediate(() => {
+    //   getIo().to(user._id.toString()).emit('userUnblocked', {
+    //     type: NOTIFICATION_TYPE.UNBLOCK_USER,
+    //   });
+    //   console.log('unblock notification sent successfully');
+    // });
 
     return user;
   } catch (error) {

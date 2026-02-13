@@ -4,7 +4,7 @@ import { Listing } from '../listing/listing.model';
 import { RequestHistory } from '../_archive/Requests_history/requestHistory.model';
 import { IBooking } from './booking.interface';
 import { Booking } from './booking.model';
-import { getIo } from '../../socket/server';
+// import { getIo } from '../../socket/server';
 import { NotificationService } from '../notification/notification.service';
 import { NOTIFICATION_TYPE } from '../notification/notification.constant';
 import { User } from '../user/user.model';
@@ -180,18 +180,18 @@ const createBooking = async (userId: string, payload: IBooking) => {
     };
 
     // ✅ Fire-and-forget: Send socket event AFTER transaction
-    setImmediate(() => {
-      try {
-        getIo()
-          .to(populatedBooking.professional.user.toString())
-          .emit('newBooking', socketPayload);
+    // setImmediate(() => {
+    //   try {
+    //     getIo()
+    //       .to(populatedBooking.professional.user.toString())
+    //       .emit('newBooking', socketPayload);
 
-        console.log('✅ Socket notification sent');
-      } catch (error) {
-        console.error('❌ Socket emit failed:', error);
-        // Socket failure is non-critical, notification is already in DB
-      }
-    });
+    //     console.log('✅ Socket notification sent');
+    //   } catch (error) {
+    //     console.error('❌ Socket emit failed:', error);
+    //     // Socket failure is non-critical, notification is already in DB
+    //   }
+    // });
 
     return populatedBooking;
   } catch (error) {
@@ -364,9 +364,9 @@ const cancelBooking = async (userId: string, bookingId: string) => {
         };
 
         console.log('updatedBooking', updatedBooking);
-        getIo()
-          .to(updatedBooking.professional.user.toString())
-          .emit('bookingCancelled', socketPayload);
+        // getIo()
+        //   .to(updatedBooking.professional.user.toString())
+        //   .emit('bookingCancelled', socketPayload);
 
         console.log('✅ Cancellation notification sent successfully');
       } catch (error) {

@@ -8,9 +8,11 @@ import morgan from 'morgan';
 import http from 'http';
 import { initSocket } from './app/socket/server';
 import { PaymentController } from './app/modules/payment/payment.controller';
+
 const app = express();
 const serverInstance = http.createServer(app);
 
+// Stripe webhook route (must be before body parsers)
 app.post(
   '/api/v1/payment/webhook',
   express.raw({ type: 'application/json' }),
@@ -24,12 +26,16 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Initialize Socket.IO and attach to app
+const ioInstance = initSocket(serverInstance);
+app.set('io', ioInstance); // ✅ CRITICAL: Attach io to Express app
+
 // Application routes (Centralized router)
 app.use('/api/v1', router);
 
 // Root router
 app.get('/', (req: Request, res: Response) => {
-  res.status(200).send(`<h1>API is running successfully </h1>`);
+  res.status(200).send('<h1>API is running successfully</h1>');
 });
 
 // Not found route
@@ -38,7 +44,6 @@ app.use(notFoundError);
 // Global error handler
 app.use(globalErrorHandler);
 
-const ioInstance = initSocket(serverInstance);
-
 export const server = serverInstance;
 export const io = ioInstance;
+export default app;

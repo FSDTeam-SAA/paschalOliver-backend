@@ -5,7 +5,7 @@ import { Booking } from '../booking/booking.model';
 import mongoose from 'mongoose';
 import { NotificationService } from '../notification/notification.service';
 import { NOTIFICATION_TYPE } from '../notification/notification.constant';
-import { getIo } from '../../socket/server';
+// import { getIo } from '../../socket/server';
 
 interface ICreateCommentPayload {
   comment?: string;
@@ -121,9 +121,9 @@ export const createComment = async (
       referenceModel: 'Service',
     });
     //sent realtime notification via socket
-    getIo()
-      .to(populatedComment.professionalId.user.toString())
-      .emit('newComment', populatedComment);
+    // getIo()
+    //   .to(populatedComment.professionalId.user.toString())
+    //   .emit('newComment', populatedComment);
 
     await session.commitTransaction();
     session.endSession();
