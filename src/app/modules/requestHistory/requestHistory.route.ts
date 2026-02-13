@@ -10,5 +10,10 @@ router.get(
   auth(userRole.professional),
   requestHistoryController.getMyRequestHistory,
 );
+router.patch(
+  '/:id/status',
+  auth(userRole.professional),
+  requestHistoryController.updateRequestStatus,
+);
 
 export const requestHistoryRoutes = router;
