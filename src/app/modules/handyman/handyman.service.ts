@@ -101,6 +101,7 @@ const getMyHandymanRequests = async (userId: string, options: IOption) => {
 };
 
 const getHandymanRequestById = async (id: string, userId?: string) => {
+  
   const reqDoc = await Handyman.findById(id)
     .populate('subCategoryId')
     .populate('categoryId')
@@ -108,9 +109,6 @@ const getHandymanRequestById = async (id: string, userId?: string) => {
 
   if (!reqDoc) throw new AppError(404, 'Request not found');
 
-  if (userId && reqDoc.userId.toString() !== userId) {
-    throw new AppError(403, 'You are not allowed to view this request');
-  }
 
   return reqDoc;
 };
