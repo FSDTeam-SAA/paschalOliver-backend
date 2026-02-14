@@ -81,10 +81,14 @@ const createHandymanRequest = async (
   return result;
 };
 
-const getMyHandymanRequests = async (userId: string, options: IOption) => {
+const getMyHandymanRequests = async (userId: string, options: IOption, status?: string) => {
   const { page, limit, skip, sortBy, sortOrder } = pagination(options);
 
-  const result = await Handyman.find({ userId })
+  if (!status) status = 'PENDING';
+
+  const filter: any = { userId, status };
+
+  const result = await Handyman.find(filter)
     .populate('subCategoryId')
     .populate('categoryId')
     .populate('professionalId')
@@ -92,7 +96,7 @@ const getMyHandymanRequests = async (userId: string, options: IOption) => {
     .limit(limit)
     .sort({ [sortBy]: sortOrder } as any);
 
-  const total = await Handyman.countDocuments({ userId });
+  const total = await Handyman.countDocuments(filter);
 
   return {
     data: result,
