@@ -4,7 +4,10 @@ import { IClientReview, TRequestStatus } from '../handyman/handyman.interface';
 import Handyman from '../handyman/handyman.model';
 import { Professional } from '../professional/professional.model';
 
-const getMyRequestHistory = async (userId: string, options: IOption) => {
+const getMyRequestHistory = async (
+  userId: string,
+  options: IOption & { status?: string }, // Added status to options
+) => {
   const professional = await Professional.findOne({ user: userId });
 
   if (!professional) {
@@ -17,13 +20,17 @@ const getMyRequestHistory = async (userId: string, options: IOption) => {
   const professionalId = professional._id;
   const { page, limit, skip, sortBy, sortOrder } = pagination(options);
 
-  // Match all jobs for this professional
-  const filter = { professionalId };
+  const filter: any = { professionalId };
+
+  if (options.status) {
+    const statusArray = options.status.split(',');
+    filter.status = { $in: statusArray };
+  }
 
   const result = await Handyman.find(filter)
-    .populate('userId') // Client details
-    .populate('subCategoryId', 'title') // Service details
-    .populate('address') // Location details
+    .populate('userId', 'name image')
+    .populate('subCategoryId', 'title')
+    .populate('address')
     .skip(skip)
     .limit(limit)
     .sort({ [sortBy]: sortOrder } as any);

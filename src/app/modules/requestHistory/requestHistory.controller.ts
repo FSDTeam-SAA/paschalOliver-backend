@@ -5,11 +5,18 @@ import { requestHistoryService } from './requestHistory.service';
 
 const getMyRequestHistory = catchAsync(async (req, res) => {
   const userId = req.user.id;
-  const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+
+  const options = pick(req.query, [
+    'limit',
+    'page',
+    'sortBy',
+    'sortOrder',
+    'status',
+  ]);
 
   const result = await requestHistoryService.getMyRequestHistory(
     userId,
-    options,
+    options as any,
   );
 
   sendResponse(res, {
