@@ -1,7 +1,7 @@
 import AppError from '../../error/appError';
 import { Message } from './message.model';
 import Conversation from '../conversation/conversation.model';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { fileUploader } from '../../helper/fileUploder';
 // import { getIo } from '../../socket/server';
 import { User } from '../user/user.model';
@@ -11,7 +11,7 @@ const sendMessage = async (
   senderId: string,
   conversationId: string,
   receiverId: string,
-  content?: string,
+  message?: string,
   attachments: string[] = [],
   image?: Express.Multer.File,
   bookingId?: string,
@@ -29,7 +29,7 @@ const sendMessage = async (
     conversation: conversationId,
     sender: senderId,
     receiver: receiverId,
-    content: content?.trim(),
+    message: message?.trim(),
     attachments,
     isRead: false,
     ...(bookingId && { bookingId }),
@@ -47,16 +47,17 @@ const sendMessage = async (
   }
   
   // Emit socket event if io is available
-  if (req?.app?.get('io') && bookingId) {
-    console.log("✅ Emitting to booking room:", bookingId);
+  if (req?.app?.get('io') && senderId && receiverId) {
+    console.log("✅ Emitting to booking room:", senderId + ":" + receiverId);
     const io = req.app.get('io');
+    const ids = [senderId, receiverId].sort();
     
     // ✅ FIXED: Use parentheses, not backticks
-    io.to(`booking:${bookingId}`).emit('receive-message', {
+    io.to(`chat:${ids[0]}:${ids[1]}`).emit('receive-message', {
       bookingId,
       senderId,
       receiverId,
-      message: content?.trim() || '',
+      message: createdMessage.message || '',
       attachments: createdMessage.attachments || [],
       image: createdMessage.image || null,
       timestamp: createdMessage.createdAt,
@@ -161,90 +162,63 @@ const hardDeleteMessage = async (messageId: string) => {
   return message;
 };
 
-const getCommunicatedUsers = async (userId: string) => {
-  const myObjectId = new Types.ObjectId(userId);
+const getCommunicatedUsersWithLastMessage = async (userId: string) => {
+  const objectUserId = new mongoose.Types.ObjectId(userId);
 
-  const users = await Message.aggregate([
+  const result = await Message.aggregate([
     {
       $match: {
         isDeleted: false,
-        $or: [
-          { sender: myObjectId },
-          { receiver: myObjectId }
-        ]
-      }
+        $or: [{ sender: objectUserId }, { receiver: objectUserId }],
+      },
     },
 
-    // Determine the "other user"
-    {
-      $addFields: {
-        otherUser: {
-          $cond: [
-            { $eq: ['$sender', myObjectId] },
-            '$receiver',
-            '$sender'
-          ]
-        }
-      }
-    },
-
-    // Sort by newest message first
     { $sort: { createdAt: -1 } },
 
-    // Group by other user
+    {
+      $addFields: {
+        otherUserId: {
+          $cond: [
+            { $eq: ['$sender', objectUserId] },
+            '$receiver',
+            '$sender',
+          ],
+        },
+      },
+    },
+
     {
       $group: {
-        _id: '$otherUser',
-        lastMessage: { $first: '$message' },
-        lastMessageTime: { $first: '$createdAt' },
-        bookingId: { $first: '$bookingId' },
-        unreadCount: {
-          $sum: {
-            $cond: [
-              {
-                $and: [
-                  { $eq: ['$receiver', myObjectId] },
-                  { $eq: ['$isRead', false] }
-                ]
-              },
-              1,
-              0
-            ]
-          }
-        }
-      }
+        _id: '$otherUserId',
+        lastMessage: { $first: '$$ROOT' },
+      },
     },
 
-    // Join user info
     {
       $lookup: {
-        from: 'users',
-        localField: '_id',
+        from: 'users',           
+        localField: '_id',       
         foreignField: '_id',
-        as: 'user'
-      }
+        as: 'user',
+      },
     },
+
     { $unwind: '$user' },
 
-    // Clean output
     {
       $project: {
-        _id: 0,
-        user: {
-          _id: '$user._id',
-          name: '$user.name',
-          email: '$user.email',
-          image: '$user.image'
-        },
-        lastMessage: 1,
-        lastMessageTime: 1,
-        unreadCount: 1
-      }
-    }
+        'user.password': 0,
+        'user.__v': 0,
+        'lastMessage.__v': 0,
+      },
+    },
+
+    { $sort: { 'lastMessage.createdAt': -1 } },
   ]);
 
-  return users;
+  return result;
 };
+
 
 
 export const MessageServices = {
@@ -253,5 +227,5 @@ export const MessageServices = {
   markMessageAsRead,
   deleteMessage,
   hardDeleteMessage,
-  getCommunicatedUsers,
+  getCommunicatedUsersWithLastMessage,
 };

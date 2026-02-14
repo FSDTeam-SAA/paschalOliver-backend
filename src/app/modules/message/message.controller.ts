@@ -108,7 +108,7 @@ export const hardDeleteMessageController = catchAsync(async (req, res) => {
 export const getCommunicatedUsersController = catchAsync(async (req, res) => {
   const userId = req.user.id;
 
-  const result = await MessageServices.getCommunicatedUsers(userId);
+  const result = await MessageServices.getCommunicatedUsersWithLastMessage(userId);
 
   sendResponse(res, {
     statusCode: 200,
