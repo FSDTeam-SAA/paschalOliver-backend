@@ -72,25 +72,17 @@ const sendMessage = async (
     .populate('receiver', 'name email image');
 };
 
+const getMessages = async (userId: string, receiverId?: string) => {
+  const query: any = { isDeleted: false };
 
-const getMessages = async (bookingId: string, userId: string) => {
-  
-  // Check if conversation exists
-  // const conversation = await Message.findOne({ bookingId: bookingId });
-  // if (!conversation) {
-  //   throw new AppError(404, 'Conversation not found');
-  // }
+  if (receiverId) {
+    query.$or = [
+      { sender: userId, receiver: receiverId },
+      { sender: receiverId, receiver: userId },
+    ];
+  }
 
-  // Check if user is a participant
-    // if (!conversation.participants.includes(userId as any)) {
-    //   throw new AppError(403, 'You are not a participant of this conversation');
-    // }
-
-  // get messages
-  const messages = await Message.find({
-    bookingId: bookingId,
-    isDeleted: false,
-  })
+  const messages = await Message.find(query)
     .sort({ createdAt: -1 })
     .populate('sender', 'name email image')
     .populate('receiver', 'name email image')
