@@ -36,5 +36,6 @@ const messageSchema = new Schema<IMessage>(
     timestamps: true,
   },
 );
+messageSchema.index({ sender: 1, receiver: 1, createdAt: -1 });
 
 export const Message = model<IMessage>('Message', messageSchema);
