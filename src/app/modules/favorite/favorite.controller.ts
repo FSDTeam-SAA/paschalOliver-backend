@@ -33,7 +33,22 @@ const getMyFavorites = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getSingleFavorite = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user;
+  const { professionalId } = req.params;
+
+  const result = await FavoriteServices.getSingleFavorite(id, professionalId!);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Favorite status retrieved successfully',
+    data: result,
+  });
+});
+
 export const FavoriteControllers = {
   toggleFavorite,
   getMyFavorites,
+  getSingleFavorite,
 };
