@@ -19,8 +19,9 @@ const createHandymanRequest = catchAsync(async (req, res) => {
 const getMyHandymanRequests = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+  const status = req.query.status as string;
 
-  const result = await handymanService.getMyHandymanRequests(userId, options);
+  const result = await handymanService.getMyHandymanRequests(userId, options, status);
 
   sendResponse(res, {
     statusCode: 200,
