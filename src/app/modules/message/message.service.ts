@@ -47,12 +47,13 @@ const sendMessage = async (
   }
   
   // Emit socket event if io is available
-  if (req?.app?.get('io') && bookingId) {
-    console.log("✅ Emitting to booking room:", bookingId);
+  if (req?.app?.get('io') && senderId && receiverId) {
+    console.log("✅ Emitting to booking room:", senderId + ":" + receiverId);
     const io = req.app.get('io');
+    const ids = [senderId, receiverId].sort();
     
     // ✅ FIXED: Use parentheses, not backticks
-    io.to(`booking:${bookingId}`).emit('receive-message', {
+    io.to(`chat:${ids[0]}:${ids[1]}`).emit('receive-message', {
       bookingId,
       senderId,
       receiverId,
