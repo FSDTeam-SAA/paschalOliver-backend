@@ -20,7 +20,7 @@ router.post(
 );
 
 router.get(
-  '/get-messages/:bookingId',
+  '/get-messages',
   auth(userRole.professional, userRole.client),
   getMessagesController,
 );

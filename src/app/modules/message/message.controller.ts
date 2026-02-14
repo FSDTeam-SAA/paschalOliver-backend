@@ -36,12 +36,9 @@ export const sendMessageController = catchAsync(async (req, res) => {
 
 // Get all messages in a conversation
 export const getMessagesController = catchAsync(async (req, res) => {
-  const { bookingId } = req.params;
+  const receiverId  = req.query.receiverId;
   const userId = req.user.id;
-  const messages = await MessageServices.getMessages(
-    bookingId as string,
-    userId as string,
-  );
+  const messages = await MessageServices.getMessages(userId, receiverId as string);
 
   sendResponse(res, {
     statusCode: 200,
