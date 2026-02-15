@@ -30,7 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 const ioInstance = initSocket(serverInstance);
 app.set('io', ioInstance); // ✅ CRITICAL: Attach io to Express app
 
-// Application routes (Centralized router)
+// Application routes (Centralized router) ok
 app.use('/api/v1', router);
 
 // Root router
