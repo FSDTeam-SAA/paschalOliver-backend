@@ -42,6 +42,27 @@ const loginUser = catchAsync(async (req, res) => {
   });
 });
 
+const socialLogin = catchAsync(async (req, res) => {
+  const { provider, token } = req.body;
+  const result = await authService.socialLogin({ provider, token });
+
+  res.cookie('refreshToken', result.refreshToken, {
+    httpOnly: true,
+    secure: config.env === 'production',
+  });
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: `${provider} login successful`,
+    data: {
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      user: result.user,
+    },
+  });
+});
+
 const switchRole = catchAsync(async (req, res) => {
   const userId = req.user.id;
 
@@ -66,8 +87,11 @@ const switchRole = catchAsync(async (req, res) => {
 });
 
 const refreshToken = catchAsync(async (req, res) => {
-  const { refreshToken } = req.body;
-  const result = await authService.refreshToken(refreshToken);
+  const tokenFromBody = req.body?.refreshToken;
+  const tokenFromCookie = req.cookies?.refreshToken;
+  const token = tokenFromBody || tokenFromCookie;
+
+  const result = await authService.refreshToken(token);
 
   sendResponse(res, {
     statusCode: 200,
@@ -153,6 +177,7 @@ export const authController = {
   registerUser,
   verifyEmail,
   loginUser,
+  socialLogin,
   switchRole,
   refreshToken,
   forgotPassword,

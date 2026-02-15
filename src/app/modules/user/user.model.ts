@@ -15,9 +15,23 @@ const userSchema = new Schema<IUser>(
       required: true,
       unique: true,
     },
+    authProvider: {
+      type: String,
+      enum: ['email', 'google', 'apple', 'facebook'],
+      default: 'email',
+    },
+    providerUserId: {
+      type: String,
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.authProvider || this.authProvider === 'email';
+      },
       select: 0,
     },
     role: {
@@ -89,7 +103,7 @@ const userSchema = new Schema<IUser>(
 
 // Password Hashing Middleware
 userSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
+  if (this.isModified('password') && this.password) {
     this.password = await bcrypt.hash(
       this.password,
       Number(config.bcryptSaltRounds),

@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.post('/register', authController.registerUser);
 router.post('/login', authController.loginUser);
+router.post('/social-login', authController.socialLogin);
 router.post(
   '/switch-role',
   auth(userRole.client, userRole.professional),
